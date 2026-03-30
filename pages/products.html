@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CROWNKICKS || Products</title>
+
+    <link rel="stylesheet" href="../css/products.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════ -->
+<p class="offer"> Free shipping <span> on orders over $100</span></p>
+
+<nav class="navbar">
+  <div class="navbar-top">
+    <a href="#" class="navbar-logo">CROWN<span>KICKS</span></a>
+
+    <div class="navbar-search">
+      <input type="text" id="searchInput" placeholder="Search sneakers, brands...">
+      <button aria-label="Search"><i class="fas fa-search"></i></button>
+    </div>
+
+    <div class="navbar-icons">
+      <div class="cart-icon-wrapper" id="cartIconWrapper">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-count" id="cart-count">0</span>
+      </div>
+
+    <div class="wishlist-icon-wrapper" id="wishlistIconWrapper">
+      <i class="fa-solid fa-heart" title="Wishlist"></i>
+      <span class="cart-count" id="wishlist-count">0</span>
+    </div>
+
+      <i class="fa-solid fa-user" title="Account"></i>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="navbar-links" id="navbar-links">
+    <div class="drawer-search">
+      <input type="text" placeholder="Search sneakers, brands...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+    <a href="/index.html">Home</a>
+    <a href="#" class="active">Products</a>
+    <a href="#">Limited Edition</a>
+    <a href="#">Contact</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     CART SIDEBAR
+══════════════════════════════════════ -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h2 class="cart-title">Your Cart</h2>
+    <button class="cart-close" id="cart-close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cart-total-price">$0</span>
+    </div>
+    <button class="checkout-btn">Checkout →</button>
+  </div>
+</div>
+
+<!-- Wishlist Sidebar -->
+<div class="wishlist-overlay" id="wishlist-overlay"></div>
+<div class="wishlist-sidebar" id="wishlist-sidebar">
+  <div class="cart-header"> <h2 class="cart-title">Your Wishlist</h2>
+    <button class="cart-close" id="wishlist-close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <div class="cart-items" id="wishlist-items">
+    </div>
+  <div class="cart-footer">
+    <button class="checkout-btn" id="move-all-to-cart">Move All to Cart</button>
+  </div>
+</div>
+
+
+<!-- ══════ PAGE HERO ══════ -->
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-hero-left">
+      <span class="page-hero-eyebrow">The Collection</span>
+      <h1>All <span>Products</span></h1>
+      <div class="page-hero-stats">
+        <span class="ph-stat">👟 <strong id="total-count">32</strong> styles</span>
+        <span class="ph-stat">⭐ Avg <strong>4.6</strong> rating</span>
+        <span class="ph-stat">🚚 <strong>Free</strong> over $100</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════ STICKY FILTER + SORT BAR ══════ -->
+<div class="shop-bar">
+  <div class="shop-bar-inner">
+    <div class="filter-chips">
+      <button class="fchip active" data-filter="all"><i class="fa-solid fa-fire"></i> All</button>
+      <button class="fchip" data-filter="sneakers"><i class="fa-solid fa-shoe-prints"></i> Sneakers</button>
+      <button class="fchip" data-filter="running"><i class="fa-solid fa-bolt"></i> Running</button>
+      <button class="fchip" data-filter="casual"><i class="fa-solid fa-star"></i> Casual</button>
+      <button class="fchip" data-filter="sale"><i class="fa-solid fa-tag"></i> On Sale</button>
+      <button class="fchip" data-filter="new"><i class="fa-regular fa-clock"></i> New</button>
+      <button class="fchip" data-filter="limited"><i class="fa-solid fa-crown"></i> Limited</button>
+    </div>
+    <div class="bar-right">
+      <span class="result-count"><strong id="shown-count">0</strong> products</span>
+      <select class="sort-select" id="sort-select">
+        <option value="default">Sort: Default</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+        <option value="rating">Top Rated</option>
+        <option value="name">Name: A → Z</option>
+      </select>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ══════ SHOP LAYOUT ══════ -->
+<div class="shop-layout">
+ 
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <h3>Filters</h3>
+      <button class="btn-reset" id="btn-reset">Clear all</button>
+    </div>
+ 
+    <!-- Brand -->
+    <div class="filter-group">
+      <div class="fg-head" onclick="toggleFG(this)">
+        <span class="fg-label">Brand</span><span class="fg-arrow">▾</span>
+      </div>
+      <div class="fg-body">
+        <label class="fcheck"><input type="checkbox" name="brand" value="Nike"        onchange="applyFilters()"><span class="fcheck-box"></span>Nike        <span class="fcheck-count">6</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Adidas"      onchange="applyFilters()"><span class="fcheck-box"></span>Adidas      <span class="fcheck-count">7</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Jordan"      onchange="applyFilters()"><span class="fcheck-box"></span>Jordan      <span class="fcheck-count">3</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Puma"        onchange="applyFilters()"><span class="fcheck-box"></span>Puma        <span class="fcheck-count">2</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="New Balance" onchange="applyFilters()"><span class="fcheck-box"></span>New Balance <span class="fcheck-count">2</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Vans"        onchange="applyFilters()"><span class="fcheck-box"></span>Vans        <span class="fcheck-count">1</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Converse"    onchange="applyFilters()"><span class="fcheck-box"></span>Converse    <span class="fcheck-count">1</span></label>
+        <label class="fcheck"><input type="checkbox" name="brand" value="Reebok"      onchange="applyFilters()"><span class="fcheck-box"></span>Reebok      <span class="fcheck-count">2</span></label>
+      </div>
+    </div>
+ 
+    <!-- Price range -->
+    <div class="filter-group">
+      <div class="fg-head" onclick="toggleFG(this)">
+        <span class="fg-label">Price Range</span><span class="fg-arrow">▾</span>
+      </div>
+      <div class="fg-body">
+        <div class="price-vals">
+          <span id="price-min-label">$0</span>
+          <span id="price-max-label">$350</span>
+        </div>
+        <div class="range-wrap">
+          <div class="range-track"></div>
+          <div class="range-fill" id="range-fill"></div>
+          <input type="range" id="range-min" min="0" max="350" value="0"   step="5" oninput="updatePriceRange()">
+          <input type="range" id="range-max" min="0" max="350" value="350" step="5" oninput="updatePriceRange()">
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Availability -->
+    <div class="filter-group">
+      <div class="fg-head" onclick="toggleFG(this)">
+        <span class="fg-label">Availability</span><span class="fg-arrow">▾</span>
+      </div>
+      <div class="fg-body">
+        <label class="fcheck"><input type="checkbox" id="filter-instock" onchange="applyFilters()"><span class="fcheck-box"></span>In Stock Only</label>
+        <label class="fcheck"><input type="checkbox" id="filter-sale"    onchange="applyFilters()"><span class="fcheck-box"></span>On Sale</label>
+        <label class="fcheck"><input type="checkbox" id="filter-new"     onchange="applyFilters()"><span class="fcheck-box"></span>New Arrivals</label>
+        <label class="fcheck"><input type="checkbox" id="filter-limited" onchange="applyFilters()"><span class="fcheck-box"></span>Limited Edition</label>
+      </div>
+    </div>
+  </aside>
+
+ 
+  <!-- PRODUCTS COLUMN -->
+  <div class="products-col">
+    <div class="active-tags" id="active-tags"></div>
+    <div class="no-results" id="no-results">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <h3>No Products Found</h3>
+      <p>Try adjusting your filters or search term</p>
+      <button onclick="resetAll()">Clear All Filters</button>
+    </div>
+    <div class="products-grid" id="products-grid"></div>
+  </div>
+</div>
+ 
+<!-- BRANDS STRIP -->
+<div class="brands-strip">
+  <div class="brands-track">
+    <ul class="brands-list">
+      <li>Nike <i class="fa-solid fa-crown"></i></li><li>Adidas <i class="fa-solid fa-crown"></i></li><li>Jordan <i class="fa-solid fa-crown"></i></li><li>Puma <i class="fa-solid fa-crown"></i></li><li>New Balance <i class="fa-solid fa-crown"></i></li><li>Vans <i class="fa-solid fa-crown"></i></li><li>Reebok <i class="fa-solid fa-crown"></i></li><li>Converse <i class="fa-solid fa-crown"></i></li><li>Limited <i class="fa-solid fa-crown"></i></li><li>Sneakers <i class="fa-solid fa-crown"></i></li>
+    </ul>
+    <ul class="brands-list" aria-hidden="true">
+      <li>Nike <i class="fa-solid fa-crown"></i></li><li>Adidas <i class="fa-solid fa-crown"></i></li><li>Jordan <i class="fa-solid fa-crown"></i></li><li>Puma <i class="fa-solid fa-crown"></i></li><li>New Balance <i class="fa-solid fa-crown"></i></li><li>Vans <i class="fa-solid fa-crown"></i></li><li>Reebok <i class="fa-solid fa-crown"></i></li><li>Converse <i class="fa-solid fa-crown"></i></li><li>Limited <i class="fa-solid fa-crown"></i></li><li>Sneakers <i class="fa-solid fa-crown"></i></li>
+    </ul>
+  </div>
+</div>
+ 
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="text">
+    <a href="index.html" class="footer-logo">CROWNKICKS</a>
+    <p>Discover the latest trends in footwear and elevate your style with our exclusive collection of sneakers, boots, and more.</p>
+    <span>© 2026 CrownKicks. All rights reserved.</span>
+  </div>
+  <div>
+    <span class="footer-col-title">Quick Links</span>
+    <div class="footer-links"><a href="#">About Us</a><a href="#">Contact</a><a href="#">Terms & Conditions</a><a href="#">Privacy Policy</a></div>
+  </div>
+  <div>
+    <span class="footer-col-title">Follow Us</span>
+    <div class="social-media"><a href="#">Instagram</a><a href="#">TikTok</a><a href="#">Twitter / X</a><a href="#">Facebook</a></div>
+  </div>
+</footer>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="../js/products.js"></script>
+</body>
+</html>
