@@ -325,24 +325,19 @@ document.getElementById('wishlist-overlay')?.addEventListener('click', toggleWis
 (function () {
   const intro = document.getElementById('storeIntro');
   const site  = document.getElementById('siteWrapper');
- 
-  /* ── open doors immediately on first paint ── */
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
-      intro.classList.add('open');
-    });
-  });
- 
-  /*
-    Timeline:
-    0ms    → doors start opening (1.0s transition)
-    1800ms → doors fully open + image visible → begin exit
-    2350ms → intro fully faded, removed from DOM
-  */
+
+  /* ── open doors after 1s delay ── */
+  setTimeout(function () {
+    intro.classList.add('open');
+  }, 1000);
+
+  /* ── close doors after 4s delay ── */
   setTimeout(function () {
     intro.classList.add('done');
     if (site) site.classList.add('show');
-    setTimeout(function () { intro.remove(); }, 600);
-  }, 3000);
+    setTimeout(function () { intro.remove(); }, 1000);
+  }, 4000);
 })();
+
+
 
