@@ -313,3 +313,29 @@ document.addEventListener("click", (e) => {
 document.getElementById('wishlistIconWrapper')?.addEventListener('click', toggleWishlist);
 document.getElementById('wishlist-close')?.addEventListener('click', toggleWishlist);
 document.getElementById('wishlist-overlay')?.addEventListener('click', toggleWishlist);
+
+
+
+
+
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const intro = document.getElementById("storeIntro");
+
+  // 1. افتح الأبواب
+  setTimeout(() => {
+    intro.classList.add("open");
+  }, 100);
+
+  // 2. اقفل الانترو وبعده اعرض الموقع
+  setTimeout(() => {
+    intro.classList.add("hide");
+
+    // 🔥 بعد الاختفاء الكامل: شيله من الصفحة
+    setTimeout(() => {
+      intro.style.display = "none";
+    }, 800);
+
+  }, 3500);
+});

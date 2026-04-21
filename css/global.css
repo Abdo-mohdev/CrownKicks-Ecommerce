@@ -845,7 +845,8 @@ img{display:block;max-width:100%}
 }
 .brands-track{
   display:flex;width:max-content;
-  animation:scroll-brands 22s linear infinite;
+  animation:scroll-brands 40s linear infinite;
+  will-change:transform;
 }
 .brands-track:hover{animation-play-state:paused}
 .brands-list{
@@ -860,7 +861,10 @@ img{display:block;max-width:100%}
 }
 .brands-list li:hover{color:var(--white)}
 .brands-list li i{font-size:8px;color:var(--gold)}
-@keyframes scroll-brands{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes scroll-brands{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
 
 /* ═══════════════════════════════════════════════
    FOOTER
@@ -988,5 +992,127 @@ img{display:block;max-width:100%}
   .footer{grid-template-columns:1fr}
   .footer .text{grid-column:1}
   .hero-right{width:95%}
+}
+
+
+/* =======================
+   INTRO WRAPPER
+======================= */
+.store-intro {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+/* =======================
+   LOGO (ALWAYS ON TOP)
+======================= */
+.store-logo {
+  position: absolute;
+  top: 40px;
+  width: 100%;
+  text-align: center;
+
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 70px;
+  letter-spacing: 8px;
+  color: white;
+
+  z-index:  15;
+
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.8),
+    0 0 25px rgba(255,255,255,0.5),
+    0 0 50px rgba(201,162,39,0.4);
+}
+
+/* =======================
+   INSIDE CONTENT
+======================= */
+.store-inside {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 5;
+
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 1s ease;
+}
+
+.inside-image {
+  width: 100%;
+  object-fit: contain;
+
+  animation: float 4s ease-in-out infinite;
+}
+
+/* FLOAT EFFECT */
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* =======================
+   DOORS
+======================= */
+.doors {
+  position: absolute;
+  inset: 0;
+  display: flex;
+
+  z-index: 20;
+}
+
+.door {
+  width: 50%;
+  height: 100%;
+  background: #111;
+  position: relative;
+
+  transition: transform 1.4s cubic-bezier(.77,0,.18,1);
+}
+
+/* GOLD EDGE LINE */
+.door::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(#C9A227, transparent);
+}
+
+.left-door::after { right: 0; }
+.right-door::after { left: 0; }
+
+/* OPEN ANIMATION */
+.store-intro.open .left-door {
+  transform: translateX(-100%);
+}
+
+.store-intro.open .right-door {
+  transform: translateX(100%);
+}
+
+/* SHOW INSIDE AFTER OPEN */
+.store-intro.open .store-inside {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* =======================
+   EXIT
+======================= */
+.store-intro.hide {
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.8s ease;
 }
 

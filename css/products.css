@@ -495,13 +495,16 @@ img{display:block;max-width:100%}
 
 /* ── Brands strip (same as home) ── */
 .brands-strip{background:var(--surface);padding:20px 0;overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.brands-track{display:flex;width:max-content;animation:scroll-brands 22s linear infinite}
+.brands-track{display:flex;width:max-content;animation:scroll-brands 40s linear infinite;will-change:transform}
 .brands-track:hover{animation-play-state:paused}
 .brands-list{display:flex;align-items:center;gap:48px;padding:0 24px;list-style:none;flex-shrink:0}
 .brands-list li{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);white-space:nowrap;cursor:default;transition:color var(--trans)}
 .brands-list li:hover{color:var(--white)}
 .brands-list li i{font-size:8px;color:var(--gold)}
-@keyframes scroll-brands{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes scroll-brands{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
 
 /* ═══════════════════════════════════════════════
    FOOTER
