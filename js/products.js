@@ -1,9 +1,6 @@
 /* ═══════════════════════════════════════
    STATE
 ═══════════════════════════════════════ */
-let allProducts    = [];
-let favorites      = [];
-let cart           = [];
 let activeCategory = 'all';
 let activeBrands   = [];
 let priceMin       = 0;
@@ -15,33 +12,43 @@ let filterInStock  = false;
 let activeSort     = 'default';
 let searchQuery    = '';
  
+
 /* ═══════════════════════════════════════
-   LOAD PRODUCTS — fetch JSON, fallback inline
+   direct links with ?filter=... (e.g. from homepage)
+═══════════════════════════════════════ */
+
+const params = new URLSearchParams(window.location.search);
+const filterFromURL = params.get('filter');
+
+if (filterFromURL) {
+  activeCategory = filterFromURL;
+}
+
+if (filterFromURL) {
+  const chip = document.querySelector(`.fchip[data-filter="${filterFromURL}"]`);
+  if (chip) {
+    document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  }
+}
+
+/* ═══════════════════════════════════════
+   LOAD PRODUCTS — fetch JSON
 ═══════════════════════════════════════ */
 async function loadProducts() {
-  try {
-    const res  = await fetch('../data/products.json');
-    const data = await res.json();
-    allProducts = data.products;
-
-    console.log("Loaded:", allProducts);
-
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    allProducts = [];
-  }
-
+  await loadProductsData('../data/products.json');
+  console.log("Loaded:", allProducts);
   applyFilters();
 }
  
 /* ═══════════════════════════════════════
-   CREATE CARD HTML — same as products-loader.js
+   CREATE CARD HTML — with wishlist support
 ═══════════════════════════════════════ */
 function createProductCard(p) {
-  const finalPrice = p.isOnSale ? (p.price * (1 - p.discount/100)).toFixed(2) : p.price;
-  const wished     = favorites.includes(p.id);
+  const finalPrice = calculateFinalPrice(p);
+  const wished = (typeof favorites !== 'undefined') ? favorites.includes(p.id) : false;
   return `
-  <div class="product-card">
+  <div class="product-card" data-category="${p.category}" data-product-id="${p.id}">
     <div class="product-img">
       <button class="favorite-btn ${wished?'active':''}" data-id="${p.id}">
         <i class="fa-${wished?'solid':'regular'} fa-heart"></i>
@@ -111,6 +118,9 @@ function getFiltered() {
 }
  
 function applyFilters() {
+  syncBrands();
+  renderActiveTags();
+  
   const filtered = getFiltered();
   const grid     = document.getElementById('products-grid');
   const noRes    = document.getElementById('no-results');
@@ -127,26 +137,13 @@ function applyFilters() {
     runScrollReveal();
   }
  
-  syncBrands();
-  renderActiveTags();
   showResetBtn();
 }
  
 /* ═══════════════════════════════════════
-   CARD LISTENERS (cart + wishlist)
+   CARD LISTENERS (favor + wishlist)
 ═══════════════════════════════════════ */
 function attachCardListeners() {
-  document.querySelectorAll('.add-to-cart').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (btn.disabled) return;
-      const {name, brand, price, img} = btn.dataset;
-      const id = name.toLowerCase().replace(/\s+/g,'-');
-      const ex = cart.find(i=>i.id===id);
-      if (ex) ex.qty++; else cart.push({id,name,brand,price:Number(price),img,qty:1});
-      updateCartCount(); renderCart(); openCart();
-    });
-  });
   document.querySelectorAll('.favorite-btn').forEach(btn => {
     btn.addEventListener('click', e => { e.stopPropagation(); toggleFavorite(Number(btn.dataset.id)); });
   });
@@ -265,145 +262,37 @@ document.getElementById('btn-reset').addEventListener('click', resetAll);
 /* ═══════════════════════════════════════
    SEARCH — live filter + scroll to grid
 ═══════════════════════════════════════ */
-document.getElementById('searchInput').addEventListener('input', function() {
-  searchQuery = this.value.trim();
-  applyFilters();
-  if (searchQuery) document.querySelector('.shop-layout').scrollIntoView({behavior:'smooth',block:'start'});
-});
 
- 
-/* ═══════════════════════════════════════
-   CART
-═══════════════════════════════════════ */
-function updateCartCount() {
-  const total=cart.reduce((s,i)=>s+i.qty,0);
-  const el=document.getElementById('cart-count');
-  el.textContent=total; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-}
-function calcTotal(){ return cart.reduce((s,i)=>s+i.price*i.qty,0); }
-function renderCart() {
-  const cont=document.getElementById('cart-items');
-  document.getElementById('cart-total-price').textContent=`$${calcTotal()}`;
-  if (!cart.length) { cont.innerHTML=`<div class="cart-empty"><i class="fa-solid fa-bag-shopping"></i><p>Your cart is empty.<br>Add some kicks!</p></div>`; return; }
-  cont.innerHTML=cart.map(item=>`
-    <div class="cart-item">
-      <img class="cart-item-img" src="${item.img}" alt="${item.name}">
-      <div class="cart-item-details">
-        <span class="cart-item-brand">${item.brand}</span>
-        <span class="cart-item-name">${item.name}</span>
-        <span class="cart-item-price">$${item.price*item.qty}</span>
-        <div class="cart-item-controls">
-          <button class="qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
-          <span class="qty-number">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${item.id}',1)">+</button>
-        </div>
-      </div>
-      <button class="cart-item-remove" onclick="removeItem('${item.id}')"><i class="fa-solid fa-xmark"></i></button>
-    </div>`).join('');
-}
-function changeQty(id,d){const item=cart.find(i=>i.id===id);if(!item)return;item.qty+=d;if(item.qty<=0)cart=cart.filter(i=>i.id!==id);updateCartCount();renderCart()}
-function removeItem(id){cart=cart.filter(i=>i.id!==id);updateCartCount();renderCart()}
-function openCart() {document.getElementById('cart-sidebar').classList.add('open');document.getElementById('cart-overlay').classList.add('open');document.body.style.overflow='hidden'}
-function closeCart(){document.getElementById('cart-sidebar').classList.remove('open');document.getElementById('cart-overlay').classList.remove('open');document.body.style.overflow=''}
-document.getElementById('cartIconWrapper').addEventListener('click', openCart);
-document.getElementById('cart-close').addEventListener('click', closeCart);
-document.getElementById('cart-overlay').addEventListener('click', closeCart);
- 
-/* ═══════════════════════════════════════
-   WISHLIST — same logic as main.js
-═══════════════════════════════════════ */
-function updateWishlistCount() {
-  const el=document.getElementById('wishlist-count');
-  el.textContent=favorites.length; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-}
-function toggleWishlistSidebar() {
-  renderWishlistItems();
-  document.getElementById('wishlist-sidebar').classList.toggle('open');
-  document.getElementById('wishlist-overlay').classList.toggle('open');
-}
-function toggleFavorite(productId) {
-  const idx=favorites.indexOf(productId);
-  if(idx>-1) favorites.splice(idx,1); else favorites.push(productId);
-  updateWishlistCount(); renderWishlistItems();
-  document.querySelectorAll(`.favorite-btn[data-id="${productId}"]`).forEach(btn=>{
-    const w=favorites.includes(productId);
-    btn.classList.toggle('active',w);
-    btn.querySelector('i').className=w?'fa-solid fa-heart':'fa-regular fa-heart';
-  });
-}
-function renderWishlistItems() {
-  const cont=document.getElementById('wishlist-items');
-  if(!cont) return;
-  if(!favorites.length){cont.innerHTML=`<div class="cart-empty"><i class="fa-regular fa-heart"></i><p>Your wishlist is empty!</p></div>`;return}
-  const favProds=allProducts.filter(p=>favorites.includes(p.id));
-  cont.innerHTML=favProds.map(item=>`
-    <div class="wishlist-item">
-      <img src="${item.image}" alt="${item.name}">
-      <div class="wishlist-item-info">
-        <span class="wishlist-item-name">${item.name}</span>
-        <span class="product-price" style="color:var(--gold);font-weight:800">$${item.price}</span>
-      </div>
-      <button class="cart-item-remove" onclick="toggleFavorite(${item.id})"><i class="fa-solid fa-trash-can"></i></button>
-    </div>`).join('');
-}
-document.getElementById('wishlistIconWrapper').addEventListener('click',toggleWishlistSidebar);
-document.getElementById('wishlist-close').addEventListener('click',toggleWishlistSidebar);
-document.getElementById('wishlist-overlay').addEventListener('click',toggleWishlistSidebar);
-document.getElementById('move-all-to-cart')?.addEventListener('click',()=>{
-  if(!favorites.length) return;
-  favorites.forEach(id=>{
-    const p=allProducts.find(x=>x.id===id); if(!p) return;
-    const cid=p.name.toLowerCase().replace(/\s+/g,'-');
-    const ex=cart.find(i=>i.id===cid);
-    if(ex) ex.qty++; else cart.push({id:cid,name:p.name,brand:p.brand,price:p.price,img:p.image,qty:1});
-  });
-  favorites=[];
-  updateWishlistCount();updateCartCount();renderCart();renderWishlistItems();
-  document.querySelectorAll('.favorite-btn').forEach(btn=>{btn.classList.remove('active');btn.querySelector('i').className='fa-regular fa-heart';});
-  toggleWishlistSidebar(); openCart();
-});
- 
-/* ═══════════════════════════════════════
-   HAMBURGER
-═══════════════════════════════════════ */
-const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navbar-links');
-hamburger.addEventListener('click',()=>{hamburger.classList.toggle('open');navLinks.classList.toggle('open')});
-navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('open');navLinks.classList.remove('open')}));
- 
-/* ═══════════════════════════════════════
-   NAVBAR SCROLL
-═══════════════════════════════════════ */
-window.addEventListener('scroll',()=>{
-  document.querySelector('.navbar').style.boxShadow=window.scrollY>10?'0 4px 40px rgba(0,0,0,.6)':'none';
-});
- 
-/* ═══════════════════════════════════════
-   SCROLL REVEAL
-═══════════════════════════════════════ */
-function runScrollReveal() {
-  const obs=new IntersectionObserver((entries)=>{
-    entries.forEach((e,i)=>{
-      if(e.isIntersecting){
-        setTimeout(()=>{e.target.style.opacity='1';e.target.style.transform='translateY(0)';},i*55);
-        obs.unobserve(e.target);
-      }
+// ربط الـ search inputs (desktop + mobile)
+const searchInputs = [
+  document.getElementById('searchInput'),
+  document.getElementById('drawerSearch')
+];
+
+searchInputs.forEach(input => {
+  if (!input) return; // في حالة البحث عن element ما موجود
+  
+  input.addEventListener('input', function() {
+    searchQuery = this.value.trim();
+    applyFilters();
+    
+    // Sync القيمة بين الـ desktop و mobile search
+    searchInputs.forEach(si => {
+      if (si && si !== this) si.value = this.value;
     });
-  },{threshold:0.08});
-  document.querySelectorAll('.product-card').forEach(el=>{
-    el.style.opacity='0';el.style.transform='translateY(20px)';
-    el.style.transition='opacity .45s ease, transform .45s ease';
-    obs.observe(el);
+    
+    // Scroll to results عندما يكتب
+    if (searchQuery) {
+      setTimeout(() => {
+        document.querySelector('.products-grid').scrollIntoView({behavior:'smooth', block:'start'});
+      }, 100);
+    }
   });
-}
- 
+});
 
- 
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  renderCart();
-  updateCartCount();
-  updateWishlistCount();
   loadProducts();
 });

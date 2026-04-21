@@ -461,7 +461,7 @@ img{display:block;max-width:100%}
 .no-results button:hover{background:var(--gold-lt)}
  
 /* ── Products grid ── */
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
  
 /* ── Product cards (from global.css) ── */
 .product-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform var(--trans),box-shadow var(--trans),border-color var(--trans)}

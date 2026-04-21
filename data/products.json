@@ -15,7 +15,18 @@
       "isLimited": false,
       "rating": 4.8,
       "reviews": 245,
-      "description": "Iconic Air Max 97 with premium comfort"
+      "description": "Iconic Air Max 97 with premium comfort",
+      "fullDescription": "Experience the legendary Air Max 97 with revolutionary cushioning technology. Featuring a signature air max unit in the heel and forefoot for maximum comfort and style. Perfect for both casual wear and athletic activities.",
+      "colors": ["White", "Black", "Silver", "Red"],
+      "sizes": [6, 7, 8, 9, 10, 11, 12, 13],
+      "material": "Leather & Mesh Upper",
+      "weight": "320g per shoe",
+      "specifications": {
+        "Type": "Casual Sneaker",
+        "Closure": "Lace-up",
+        "Sole": "Rubber",
+        "Air Unit": "Full-length Max Air"
+      }
     },
     {
       "id": 2,
@@ -32,7 +43,18 @@
       "isLimited": false,
       "rating": 4.6,
       "reviews": 182,
-      "description": "Classic Adidas Forum Low for everyday wear"
+      "description": "Classic Adidas Forum Low for everyday wear",
+      "fullDescription": "The Adidas Forum Low brings back a basketball legend in a versatile everyday silhouette. With its iconic rubber cage and comfortable fit, it's perfect for any occasion. Combine heritage with modern style.",
+      "colors": ["White/Black", "All White", "Black", "Navy"],
+      "sizes": [6, 7, 8, 9, 10, 11, 12, 13],
+      "material": "Premium Leather",
+      "weight": "285g per shoe",
+      "specifications": {
+        "Type": "Lifestyle Sneaker",
+        "Closure": "Velcro & Lace",
+        "Fit": "Low-top",
+        "Cushioning": "OrthoLite insole"
+      }
     },
     {
       "id": 3,
@@ -49,7 +71,18 @@
       "isLimited": false,
       "rating": 4.4,
       "reviews": 156,
-      "description": "Comfortable Puma Suede for casual style"
+      "description": "Comfortable Puma Suede for casual style",
+      "fullDescription": "The classic Puma Suede has been a staple since 1968. With its soft suede upper and retro design, it offers timeless style and all-day comfort. A must-have in any sneaker collection.",
+      "colors": ["Black", "White", "Beige", "Navy", "Grey"],
+      "sizes": [5, 6, 7, 8, 9, 10, 11, 12, 13],
+      "material": "Suede Upper with Rubber Sole",
+      "weight": "250g per shoe",
+      "specifications": {
+        "Type": "Casual Classic",
+        "Era": "1968 Original",
+        "Fit": "True to size",
+        "Care": "Wipe clean with soft cloth"
+      }
     },
     {
       "id": 4,

@@ -1,117 +1,45 @@
 /* ═══════════════════════════════════════════
-   CART STATE
+   CART INITIALIZATION & EVENT LISTENERS
 ═══════════════════════════════════════════ */
-let cart = [];
 
-/* ── helpers ── */
-function updateCartCount() {
-  const total = cart.reduce((s, i) => s + i.qty, 0);
-  const el = document.getElementById('cart-count');
-  el.textContent = total;
-  el.classList.remove('pop');
-  void el.offsetWidth;
-  el.classList.add('pop');
-}
+// Init empty cart on page load
+document.addEventListener('DOMContentLoaded', () => {
+  renderCart();
+  updateCartCount();
+});
 
-function calcTotal() {
-  return cart.reduce((s, i) => s + i.price * i.qty, 0);
-}
+// Cart sidebar controls
+const cartIconWrapper = document.getElementById('cartIconWrapper');
+const cartClose = document.getElementById('cart-close');
+const cartOverlay = document.getElementById('cart-overlay');
 
-/* ── render cart items ── */
-function renderCart() {
-  const container = document.getElementById('cart-items');
-  const totalEl   = document.getElementById('cart-total-price');
+if (cartIconWrapper) cartIconWrapper.addEventListener('click', openCart);
+if (cartClose) cartClose.addEventListener('click', closeCart);
+if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
 
-  if (!cart.length) {
-    container.innerHTML = `
-      <div class="cart-empty">
-        <i class="fa-solid fa-bag-shopping"></i>
-        <p>Your cart is empty.<br>Add some kicks!</p>
-      </div>`;
-    totalEl.textContent = '$0';
+// Add to cart event delegation
+attachAddToCartListeners();
+
+/* ═══════════════════════════════════════════
+   PRODUCT CARD NAVIGATION
+═══════════════════════════════════════════ */
+document.addEventListener('click', e => {
+  const card = e.target.closest('.product-card');
+  
+  // Don't navigate if clicking add-to-cart or wishlist button
+  if (e.target.closest('.add-to-cart') || e.target.closest('.favorite-btn')) {
     return;
   }
-
-  container.innerHTML = cart.map(item => `
-    <div class="cart-item" data-id="${item.id}">
-      <img class="cart-item-img" src="${item.img}" alt="${item.name}">
-      <div class="cart-item-details">
-        <span class="cart-item-brand">${item.brand}</span>
-        <span class="cart-item-name">${item.name}</span>
-        <span class="cart-item-price">$${item.price * item.qty}</span>
-        <div class="cart-item-controls">
-          <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
-          <span class="qty-number">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
-        </div>
-      </div>
-      <button class="cart-item-remove" onclick="removeItem('${item.id}')" title="Remove">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>`).join('');
-
-  totalEl.textContent = `$${calcTotal()}`;
-}
-
-/* ── add to cart ── */
-function attachAddToCartListeners() {
-  document.querySelectorAll('.add-to-cart').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (btn.disabled) return;
-      
-      const { name, brand, price, img } = btn.dataset;
-      const id = name.toLowerCase().replace(/\s+/g, '-');
-      const existing = cart.find(i => i.id === id);
-      if (existing) {
-        existing.qty++;
-      } else {
-        cart.push({ id, name, brand, price: Number(price), img, qty: 1 });
-      }
-      updateCartCount();
-      renderCart();
-      openCart();
-    });
-  });
-}
-
-/* Attach listeners on load */
-document.addEventListener('DOMContentLoaded', attachAddToCartListeners);
-
-/* ── qty & remove ── */
-function changeQty(id, delta) {
-  const item = cart.find(i => i.id === id);
-  if (!item) return;
-  item.qty += delta;
-  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-  updateCartCount();
-  renderCart();
-}
-function removeItem(id) {
-  cart = cart.filter(i => i.id !== id);
-  updateCartCount();
-  renderCart();
-}
-
-/* ── open / close ── */
-function openCart() {
-  document.getElementById('cart-sidebar').classList.add('open');
-  document.getElementById('cart-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeCart() {
-  document.getElementById('cart-sidebar').classList.remove('open');
-  document.getElementById('cart-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-document.getElementById('cartIconWrapper').addEventListener('click', openCart);
-document.getElementById('cart-close').addEventListener('click', closeCart);
-document.getElementById('cart-overlay').addEventListener('click', closeCart);
-
-/* init empty cart */
-renderCart();
-updateCartCount();
+  
+  if (card && card.dataset.productId) {
+    const productId = card.dataset.productId;
+    // Navigate to product detail page
+    const detailPagePath = window.location.pathname.includes('pages/') 
+      ? 'product-detail.html' 
+      : 'pages/product-detail.html';
+    window.location.href = `${detailPagePath}?id=${productId}`;
+  }
+});
 
 /* ═══════════════════════════════════════════
    HAMBURGER / MOBILE MENU
@@ -135,19 +63,74 @@ navLinks.querySelectorAll('a').forEach(a => {
 
 
 /* ═══════════════════════════════════════════
-   SEARCH — Search by name, brand, and category
+   SEARCH — live search across all pages
 ═══════════════════════════════════════════ */
-document.getElementById('searchInput').addEventListener('input', function () {
-  const q = this.value.toLowerCase().trim();
-  document.querySelectorAll('.product-card').forEach(card => {
-    const name     = card.querySelector('.product-name').textContent.toLowerCase();
-    const brand    = card.querySelector('.product-brand').textContent.toLowerCase();
-    const category = card.querySelector('.add-to-cart')?.dataset.category?.toLowerCase() || '';
-    
-    const matches = !q || name.includes(q) || brand.includes(q) || category.includes(q);
-    card.style.opacity    = matches ? '1' : '0.2';
-    card.style.transform  = matches ? '' : 'scale(0.96)';
-    card.style.transition = 'opacity .3s, transform .3s';
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchInput');
+  const drawerSearch = document.getElementById('drawerSearch');
+  
+  // Function للـ search logic
+  function handleSearch(q) {
+    // في products page: استخدم searchQuery و applyFilters
+    if (typeof searchQuery !== 'undefined') {
+      searchQuery = q;
+      applyFilters();
+      if (q) {
+        setTimeout(() => {
+          const grid = document.querySelector('.products-grid');
+          if (grid) grid.scrollIntoView({behavior:'smooth', block:'start'});
+        }, 100);
+      }
+    } else {
+      // في home page: search في كل العناصر و scroll to first match
+      const cards = document.querySelectorAll('.product-card, .featured-card, [class*="card"]');
+      let firstMatch = null;
+      
+      cards.forEach(card => {
+        const name = card.querySelector('.product-name')?.textContent.toLowerCase() || 
+                     card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const brand = card.querySelector('.product-brand')?.textContent.toLowerCase() || 
+                      card.querySelector('.brand')?.textContent.toLowerCase() || '';
+        const category = card.querySelector('.add-to-cart')?.dataset.category?.toLowerCase() || 
+                         card.getAttribute('data-category')?.toLowerCase() || '';
+        
+        const matches = !q || name.includes(q) || brand.includes(q) || category.includes(q);
+        
+        card.style.opacity = matches ? '1' : '0.3';
+        card.style.transform = matches ? 'scale(1)' : 'scale(0.95)';
+        card.style.transition = 'opacity .3s, transform .3s';
+        card.style.pointerEvents = matches ? 'auto' : 'none';
+        
+        if (matches && !firstMatch) {
+          firstMatch = card;
+        }
+      });
+      
+      // Scroll to first match عند البحث
+      if (q && firstMatch) {
+        setTimeout(() => {
+          firstMatch.scrollIntoView({behavior:'smooth', block:'center'});
+        }, 100);
+      }
+    }
+  }
+  
+  // ربط كلا الـ search inputs (desktop + drawer)
+  [searchInput, drawerSearch].forEach(input => {
+    if (input) {
+      input.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        
+        // Sync القيمة بين الـ desktop والـ drawer
+        if (this === searchInput && drawerSearch) {
+          drawerSearch.value = this.value;
+        } else if (this === drawerSearch && searchInput) {
+          searchInput.value = this.value;
+        }
+        
+        handleSearch(q);
+      });
+    }
   });
 });
 
@@ -227,6 +210,11 @@ function toggleFavorite(productId) {
 
   updateWishlistCount();
   renderWishlistItems(); // تحديث القائمة لو الـ sidebar مفتوح
+  
+  // Update the product-detail heart if on that page
+  if (typeof updateWishlistButton === 'function') {
+    updateWishlistButton();
+  }
 }
 
 // 4. رسم المنتجات داخل الـ Wishlist Sidebar
@@ -294,6 +282,11 @@ document.getElementById('move-all-to-cart')?.addEventListener('click', () => {
   document.querySelectorAll('.favorite-btn').forEach(btn => {
     btn.classList.remove('active');
   });
+
+  // تحديث الـ product-detail heart if on that page
+  if (typeof updateWishlistButton === 'function') {
+    updateWishlistButton();
+  }
 
   // تحديث كل العدادات والـ UI
   updateWishlistCount();
