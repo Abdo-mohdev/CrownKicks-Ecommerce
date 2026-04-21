@@ -1084,7 +1084,7 @@ img{display:block;max-width:100%}
   content: "";
   position: absolute;
   top: 0;
-  width: 2px;
+  width: 5px;
   height: 100%;
   background: linear-gradient(#C9A227, transparent);
 }

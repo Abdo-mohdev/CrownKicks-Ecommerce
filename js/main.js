@@ -319,23 +319,23 @@ document.getElementById('wishlist-overlay')?.addEventListener('click', toggleWis
 
 
 
-
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   const intro = document.getElementById("storeIntro");
+  const site = document.getElementById("siteWrapper");
 
-  // 1. افتح الأبواب
-  setTimeout(() => {
+  // fire immediately after first paint
+  requestAnimationFrame(() => {
     intro.classList.add("open");
-  }, 100);
+  });
 
-  // 2. اقفل الانترو وبعده اعرض الموقع
-  setTimeout(() => {
+  // wait only for animation end (NOT time-based)
+  intro.addEventListener("transitionend", (e) => {
+    if (e.propertyName !== "transform") return;
+
+    // open finished → show site instantly
     intro.classList.add("hide");
+    site.classList.add("show");
 
-    // 🔥 بعد الاختفاء الكامل: شيله من الصفحة
-    setTimeout(() => {
-      intro.style.display = "none";
-    }, 800);
-
-  }, 3500);
+    setTimeout(() => intro.remove(), 700);
+  });
 });
