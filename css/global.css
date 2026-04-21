@@ -995,124 +995,341 @@ img{display:block;max-width:100%}
 }
 
 
-/* =======================
-   INTRO WRAPPER
-======================= */
-.store-intro {
+/* ══════════════════════════════════════
+   INTRO SHELL
+══════════════════════════════════════ */
+#storeIntro {
   position: fixed;
   inset: 0;
-  background: #0a0a0a;
-  overflow: hidden;
   z-index: 99999;
+  background: var(--bg);
+  overflow: hidden;
+  /* 3-D space for doors */
+  perspective: 1800px;
+  perspective-origin: 50% 50%;
 }
-
-/* =======================
-   LOGO (ALWAYS ON TOP)
-======================= */
-.store-logo {
-  position: absolute;
-  top: 40px;
-  width: 100%;
-  text-align: center;
-
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 70px;
-  letter-spacing: 8px;
-  color: white;
-
-  z-index:  15;
-
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.8),
-    0 0 25px rgba(255,255,255,0.5),
-    0 0 50px rgba(201,162,39,0.4);
-}
-
-/* =======================
-   INSIDE CONTENT
-======================= */
-.store-inside {
+ 
+/* ══════════════════════════════════════
+   BACKGROUND — sneaker store interior
+   Uses a high-quality Unsplash image of
+   a luxury sneaker wall / store floor
+══════════════════════════════════════ */
+.intro-bg {
   position: absolute;
   inset: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 5;
-
+  background:
+    /* dark vignette overlay so logo pops */
+    radial-gradient(ellipse 80% 70% at 50% 50%,
+      transparent 30%,
+      rgba(0,0,0,.55) 100%
+    ),
+    url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&q=90')
+    center/cover no-repeat;
+  z-index: 1;
+  transform: scale(1.04);
+  transition: transform 1.6s cubic-bezier(.16,1,.3,1);
+}
+/* slight Ken Burns while doors are closed */
+#storeIntro.open .intro-bg {
+  transform: scale(1);
+}
+ 
+/* ══════════════════════════════════════
+   LOGO
+══════════════════════════════════════ */
+.intro-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  z-index: 40;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 9vw, 108px);
+  letter-spacing: .18em;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+ 
+  /* gold shimmer text */
+  background: linear-gradient(
+    105deg,
+    var(--gold-dk)  0%,
+    var(--gold)     35%,
+    var(--gold-lt)  50%,
+    var(--gold)     65%,
+    var(--gold-dk) 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+ 
   opacity: 0;
-  transform: scale(0.95);
-  transition: all 1s ease;
+  animation:
+    logo-in      .7s .05s cubic-bezier(.16,1,.3,1) forwards,
+    logo-shimmer  3s .05s linear infinite;
 }
-
-.inside-image {
-  width: 100%;
-  object-fit: contain;
-
-  animation: float 4s ease-in-out infinite;
+ 
+.intro-logo span {
+  display: block;
+  font-size: .55em;
+  letter-spacing: .38em;
+  opacity: .85;
 }
-
-/* FLOAT EFFECT */
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+ 
+@keyframes logo-in {
+  from { opacity:0; transform: translate(-50%,-48%) scale(.88); }
+  to   { opacity:1; transform: translate(-50%,-54%) scale(1);   }
 }
-
-/* =======================
+@keyframes logo-shimmer {
+  0%   { background-position: 200% 50%; }
+  100% { background-position:  -100% 50%; }
+}
+ 
+/* thin gold rule under logo */
+.intro-rule {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-54% + clamp(56px,11vw,124px)));
+  z-index: 40;
+  width: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: rule-grow .6s .5s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes rule-grow {
+  to { width: clamp(100px, 25vw, 260px); }
+}
+ 
+/* tagline */
+.intro-tag {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-54% + clamp(74px,13vw,148px)));
+  z-index: 40;
+  font-size: clamp(10px,1.2vw,14px);
+  font-weight: 700;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.0);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: tag-in .6s .65s ease forwards;
+}
+@keyframes tag-in {
+  to { color: rgba(255,255,255,.45); }
+}
+ 
+/* ══════════════════════════════════════
    DOORS
-======================= */
+══════════════════════════════════════ */
 .doors {
   position: absolute;
   inset: 0;
   display: flex;
-
-  z-index: 20;
+  z-index: 30;
+  transform-style: preserve-3d;
 }
-
+ 
 .door {
+  position: relative;
   width: 50%;
   height: 100%;
-  background: #111;
-  position: relative;
-
-  transition: transform 1.4s cubic-bezier(.77,0,.18,1);
+  overflow: hidden;
+  will-change: transform, opacity;
+  transform-origin: center center;
+ 
+  /* ── Rich door surface ─────────────────
+     Layered gradients create a sense of
+     depth and material — not flat black   */
+  background:
+    /* top-left corner light catch */
+    radial-gradient(
+      ellipse 60% 40% at 50% -5%,
+      rgba(201,162,39,.07) 0%,
+      transparent 70%
+    ),
+    /* subtle vertical panel lines */
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 79px,
+      rgba(255,255,255,.018) 79px,
+      rgba(255,255,255,.018) 80px
+    ),
+    /* diagonal micro-grain */
+    repeating-linear-gradient(
+      -55deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,.009) 3px,
+      rgba(255,255,255,.009) 6px
+    ),
+    /* main vertical gradient — slightly warm at top */
+    linear-gradient(
+      180deg,
+      #161410 0%,
+      #111  35%,
+      #0f0f0f 75%,
+      #0c0c0c 100%
+    );
+ 
+  /* door opens with slight rotateY for hinge feel */
+  transition:
+    transform 1.0s cubic-bezier(.7, 0, .3, 1),
+    opacity   1.0s ease;
 }
-
-/* GOLD EDGE LINE */
-.door::after {
-  content: "";
+ 
+/* ── Left door hinge on right edge ── */
+.left-door  { transform-origin: right  center; }
+/* ── Right door hinge on left edge ── */
+.right-door { transform-origin: left center; }
+ 
+/* ── Gold seam between doors ── */
+.door::before {
+  content: '';
   position: absolute;
   top: 0;
-  width: 5px;
+  width: 1.5px;
   height: 100%;
-  background: linear-gradient(#C9A227, transparent);
+  background: linear-gradient(
+    180deg,
+    transparent          0%,
+    rgba(201,162,39,.15) 8%,
+    var(--gold)          30%,
+    var(--gold-lt)       50%,
+    var(--gold)          70%,
+    rgba(201,162,39,.15) 92%,
+    transparent         100%
+  );
+  z-index: 4;
 }
-
-.left-door::after { right: 0; }
-.right-door::after { left: 0; }
-
-/* OPEN ANIMATION */
-.store-intro.open .left-door {
-  transform: translateX(-100%);
+.left-door::before  { right: 0; }
+.right-door::before { left:  0; }
+ 
+/* ── Sweeping gold light (alive from frame 0) ── */
+.door::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  width: 28%;
+  height: 140%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgba(201,162,39,.025) 35%,
+    rgba(201,162,39,.07)  50%,
+    rgba(201,162,39,.025) 65%,
+    transparent
+  );
+  transform: skewX(-8deg);
+  animation: sweep 2.8s ease-in-out infinite;
+  z-index: 3;
 }
-
-.store-intro.open .right-door {
-  transform: translateX(100%);
+.left-door::after  { animation-delay: 0s;   }
+.right-door::after { animation-delay: 1.4s; }
+ 
+@keyframes sweep {
+  0%   { left: -35%; opacity: 0;   }
+  8%   {             opacity: 1;   }
+  92%  {             opacity: 1;   }
+  100% { left: 120%; opacity: 0;   }
 }
-
-/* SHOW INSIDE AFTER OPEN */
-.store-intro.open .store-inside {
-  opacity: 1;
-  transform: scale(1);
+ 
+/* ── Door panel inset lines ──
+   Two horizontal inset rails give depth   */
+.door-panel {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201,162,39,.12) 20%,
+    rgba(201,162,39,.22) 50%,
+    rgba(201,162,39,.12) 80%,
+    transparent
+  );
+  z-index: 2;
 }
-
-/* =======================
-   EXIT
-======================= */
-.store-intro.hide {
+.door-panel.top    { top:    28%; }
+.door-panel.bottom { bottom: 28%; }
+ 
+/* ── Crown emblem watermark ── */
+.door-emblem {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
   opacity: 0;
-  visibility: hidden;
-  transition: 0.8s ease;
+  animation: emblem-in .8s .2s ease forwards;
 }
-
+@keyframes emblem-in {
+  to { opacity: 1; }
+}
+ 
+/* SVG crown drawn purely in CSS shapes */
+.crown-svg {
+  width: clamp(32px, 5vw, 60px);
+  height: auto;
+  opacity: .12;
+  filter: drop-shadow(0 0 8px rgba(201,162,39,.3));
+}
+ 
+/* ── Door handle ── */
+.door-handle {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: clamp(28px, 4vh, 48px);
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    rgba(201,162,39,.6),
+    rgba(201,162,39,.9) 40%,
+    rgba(201,162,39,.7) 100%
+  );
+  box-shadow:
+    0 0 6px rgba(201,162,39,.25),
+    inset 0 1px 0 rgba(255,255,255,.2);
+  transform: translateY(-50%);
+  z-index: 5;
+}
+.left-door  .door-handle { right: 6%; }
+.right-door .door-handle { left:  6%; }
+ 
+/* ══════════════════════════════════════
+   OPEN STATE — doors swing open
+══════════════════════════════════════ */
+#storeIntro.open .left-door {
+  transform: perspective(1800px) rotateY(-18deg) translateX(-82%);
+  opacity: .6;
+}
+#storeIntro.open .right-door {
+  transform: perspective(1800px) rotateY(18deg) translateX(82%);
+  opacity: .6;
+}
+ 
+/* ══════════════════════════════════════
+   EXIT — whole intro fades away
+══════════════════════════════════════ */
+#storeIntro.done {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .55s cubic-bezier(.4,0,1,1);
+}
+ 
+/* ══════════════════════════════════════
+   SITE WRAPPER (everything behind intro)
+══════════════════════════════════════ */
+#siteWrapper {
+  opacity: 0;
+  transition: opacity .6s ease .1s;
+}
+#siteWrapper.show { opacity: 1; }

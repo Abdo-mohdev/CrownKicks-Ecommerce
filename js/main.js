@@ -319,23 +319,30 @@ document.getElementById('wishlist-overlay')?.addEventListener('click', toggleWis
 
 
 
-window.addEventListener("load", () => {
-  const intro = document.getElementById("storeIntro");
-  const site = document.getElementById("siteWrapper");
 
-  // fire immediately after first paint
-  requestAnimationFrame(() => {
-    intro.classList.add("open");
+ 
+
+(function () {
+  const intro = document.getElementById('storeIntro');
+  const site  = document.getElementById('siteWrapper');
+ 
+  /* ── open doors immediately on first paint ── */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      intro.classList.add('open');
+    });
   });
+ 
+  /*
+    Timeline:
+    0ms    → doors start opening (1.0s transition)
+    1800ms → doors fully open + image visible → begin exit
+    2350ms → intro fully faded, removed from DOM
+  */
+  setTimeout(function () {
+    intro.classList.add('done');
+    if (site) site.classList.add('show');
+    setTimeout(function () { intro.remove(); }, 600);
+  }, 3000);
+})();
 
-  // wait only for animation end (NOT time-based)
-  intro.addEventListener("transitionend", (e) => {
-    if (e.propertyName !== "transform") return;
-
-    // open finished → show site instantly
-    intro.classList.add("hide");
-    site.classList.add("show");
-
-    setTimeout(() => intro.remove(), 700);
-  });
-});
