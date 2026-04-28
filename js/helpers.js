@@ -441,3 +441,28 @@ function dismissToast(toast) {
     if (toast.parentNode) toast.parentNode.removeChild(toast);
   }, 320);
 }
+
+
+
+/* ═══════════════════════════════════════════
+   DARK / LIGHT MODE TOGGLE
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
+  const toggle   = document.getElementById('themeToggle');
+  const icon     = document.getElementById('themeIcon');
+  const body     = document.body;
+
+  // apply saved preference on load
+  if (localStorage.getItem('theme') === 'light') {
+    body.classList.add('light-mode');
+    if (icon) icon.className = 'fa-solid fa-sun';
+  }
+
+  if (!toggle) return;
+
+  toggle.addEventListener('click', function () {
+    const isLight = body.classList.toggle('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    if (icon) icon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  });
+});
