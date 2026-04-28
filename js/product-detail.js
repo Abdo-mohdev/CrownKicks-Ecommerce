@@ -51,7 +51,7 @@ function displayProductDetails(product) {
   /* breadcrumb + page title */
   const bcEl = document.getElementById('breadcrumb-product');
   if (bcEl) bcEl.textContent = product.name;
-  document.title = `CROWNKICKS || ${product.name}`;
+  document.title = `Premium Shoes EG || ${product.name}`;
  
   /* category */
   const catEl = document.getElementById('productCategory');
