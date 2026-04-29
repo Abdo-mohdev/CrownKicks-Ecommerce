@@ -5,6 +5,33 @@
 let allProducts = [];
 let cart        = [];
 let favorites   = [];
+
+/* ═══════════════════════════════════════════
+   CART PERSISTENCE — localStorage
+═══════════════════════════════════════════ */
+
+function saveCart() {
+  try { localStorage.setItem('pseg_cart', JSON.stringify(cart)); } catch(e) {}
+}
+
+function loadCart() {
+  try {
+    const saved = localStorage.getItem('pseg_cart');
+    if (saved) cart = JSON.parse(saved);
+  } catch(e) { cart = []; }
+}
+
+function saveFavorites() {
+  try { localStorage.setItem('pseg_favorites', JSON.stringify(favorites)); } catch(e) {}
+}
+
+function loadFavorites() {
+  try {
+    const saved = localStorage.getItem('pseg_favorites');
+    if (saved) favorites = JSON.parse(saved);
+  } catch(e) { favorites = []; }
+}
+
  
 /* ═══════════════════════════════════════════
    PRODUCTS — load & helpers
@@ -56,8 +83,8 @@ function createProductCard(product) {
         </div>
         <span class="product-price">
           ${product.isOnSale
-            ? `<span class="orig-price">$${product.price}</span><span class="sale-price">$${finalPrice}</span>`
-            : `<span>$${product.price}</span>`}
+            ? `<span class="orig-price">EGP ${product.price}</span><span class="sale-price">EGP ${finalPrice}</span>`
+            : `<span>EGP ${product.price}</span>`}
         </span>
         <button class="add-to-cart"
           data-name="${product.name}"
@@ -105,7 +132,7 @@ function renderFeaturedProducts() {
           <span class="featured-tag">${p.isLimited ? 'Limited Edition' : p.isOnSale ? 'On Sale' : 'Featured'}</span>
           <span class="featured-brand">${p.brand}</span>
           <h3 class="featured-name">${p.name}</h3>
-          <span class="featured-price">$${finalPrice}</span>
+          <span class="featured-price">EGP ${finalPrice}</span>
           <a href="pages/product-detail.html?id=${p.id}" class="featured-btn">Shop Now <i class="fa-solid fa-arrow-right-long"></i></a>
         </div>
       </div>`;
@@ -151,7 +178,7 @@ function renderCart() {
         <i class="fa-solid fa-bag-shopping"></i>
         <p>Your cart is empty.<br>Add some kicks!</p>
       </div>`;
-    totalEl.textContent = '$0';
+    totalEl.textContent = 'EGP 0';
     return;
   }
  
@@ -161,7 +188,7 @@ function renderCart() {
       <div class="cart-item-details">
         <span class="cart-item-brand">${item.brand}</span>
         <span class="cart-item-name">${item.name}</span>
-        <span class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</span>
+        <span class="cart-item-price">EGP ${(item.price * item.qty).toFixed(2)}</span>
         <div class="cart-item-controls">
           <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
           <span class="qty-number">${item.qty}</span>
@@ -173,7 +200,7 @@ function renderCart() {
       </button>
     </div>`).join('');
  
-  totalEl.textContent = '$' + calcTotal().toFixed(2);
+  totalEl.textContent = 'EGP ' + calcTotal().toFixed(2);
 }
  
 function changeQty(id, delta) {
@@ -183,12 +210,14 @@ function changeQty(id, delta) {
   if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
   updateCartCount();
   renderCart();
+  saveCart();
 }
  
 function removeItem(id) {
   cart = cart.filter(i => i.id !== id);
   updateCartCount();
   renderCart();
+  saveCart();
 }
  
 function openCart() {
@@ -230,11 +259,12 @@ function attachAddToCartListeners() {
       showToast('Cart Updated', name + ' · qty ' + existing.qty, 'info');
     } else {
       cart.push({ id: id, name: name, brand: brand, price: Number(price), img: img, qty: 1 });
-      showToast('Added to Cart', name + ' · $' + price, 'success');
+      showToast('Added to Cart', name + ' · EGP ' + price, 'success');
     }
  
     updateCartCount();
     renderCart();
+    saveCart();
   });
 }
  
@@ -277,6 +307,7 @@ function toggleFavorite(productId) {
  
   updateWishlistCount();
   renderWishlistItems();
+  saveFavorites();
   if (typeof updateWishlistButton === 'function') updateWishlistButton();
 }
  
@@ -299,7 +330,7 @@ function renderWishlistItems() {
       <img src="${item.image}" alt="${item.name}">
       <div class="wishlist-item-info">
         <span class="wishlist-item-name">${item.name}</span>
-        <span class="product-price">$${item.price}</span>
+        <span class="product-price">EGP ${item.price}</span>
       </div>
       <button class="cart-item-remove" onclick="toggleFavorite(${item.id})" title="Remove">
         <i class="fa-solid fa-trash-can"></i>
@@ -337,6 +368,8 @@ document.addEventListener('DOMContentLoaded', function () {
       updateWishlistCount();
       updateCartCount();
       renderCart();
+      saveCart();
+      saveFavorites();
       showToast('Moved to Cart', 'All wishlist items added', 'success');
       toggleWishlist();
       openCart();
@@ -367,8 +400,11 @@ document.addEventListener('DOMContentLoaded', function () {
 ═══════════════════════════════════════════ */
  
 document.addEventListener('DOMContentLoaded', function () {
+  loadCart();
+  loadFavorites();
   renderCart();
   updateCartCount();
+  updateWishlistCount();
  
   const cartIcon    = document.getElementById('cartIconWrapper');
   const cartClose   = document.getElementById('cart-close');
@@ -464,5 +500,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const isLight = body.classList.toggle('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
     if (icon) icon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  });
+});
+
+
+/* ═══════════════════════════════════════════
+   CHECKOUT BUTTON NAVIGATION
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.checkout-btn').forEach(function(btn) {
+    if (btn.id === 'move-all-to-cart') return; // skip the wishlist btn
+    btn.addEventListener('click', function() {
+      if (!cart.length) {
+        showToast('Cart is Empty', 'Add some kicks first!', 'error');
+        return;
+      }
+      const isInPages = window.location.pathname.includes('/pages/');
+      window.location.href = isInPages ? 'checkout.html' : 'pages/checkout.html';
+    });
   });
 });

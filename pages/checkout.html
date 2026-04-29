@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — Premium Shoes EG</title>
+
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/checkout.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,900;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- OFFER BAR -->
+<p class="offer">Free shipping <span>on orders over $100</span></p>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-top">
+    <a href="../index.html" class="navbar-logo">Premium <span>Shoes EG</span></a>
+    <div class="navbar-search">
+      <input type="text" id="searchInput" placeholder="Search sneakers, brands...">
+      <button aria-label="Search"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="navbar-icons">
+      <div class="cart-icon-wrapper" id="cartIconWrapper">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-count" id="cart-count">0</span>
+      </div>
+      <div class="wishlist-icon-wrapper" id="wishlistIconWrapper">
+        <i class="fa-solid fa-heart"></i>
+        <span class="cart-count" id="wishlist-count">0</span>
+      </div>
+      <i class="fa-solid fa-user"></i>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+  <div class="navbar-links" id="navbar-links">
+    <div class="drawer-search">
+      <input type="text" id="drawerSearch" placeholder="Search sneakers, brands...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+    <a href="../index.html">Home</a>
+    <a href="products.html">Shop</a>
+    <a href="products.html?filter=sale">Sale</a>
+    <a href="products.html?filter=limited">Limited</a>
+    <a href="checkout.html" class="active">Checkout</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h2 class="cart-title">Your Cart</h2>
+    <button class="cart-close" id="cart-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cart-total-price">$0</span></div>
+    <button class="checkout-btn">Checkout →</button>
+  </div>
+</div>
+
+<!-- WISHLIST SIDEBAR -->
+<div class="wishlist-overlay" id="wishlist-overlay"></div>
+<div class="wishlist-sidebar" id="wishlist-sidebar">
+  <div class="cart-header">
+    <h2 class="cart-title">Your Wishlist</h2>
+    <button class="cart-close" id="wishlist-close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="wishlist-items"></div>
+  <div class="cart-footer">
+    <button class="checkout-btn" id="move-all-to-cart">Move All to Cart</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE HERO
+══════════════════════════════════════ -->
+<section class="checkout-hero">
+  <div class="checkout-hero-inner">
+    <span class="checkout-eyebrow">Almost There</span>
+    <h1 class="checkout-title">Checkout</h1>
+    <!-- STEPS -->
+    <div class="checkout-steps">
+      <div class="step active" id="step-indicator-1">
+        <div class="step-dot">1</div>
+        <span>Details</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step-indicator-2">
+        <div class="step-dot">2</div>
+        <span>Review</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" id="step-indicator-3">
+        <div class="step-dot">3</div>
+        <span>Confirm</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CHECKOUT LAYOUT
+══════════════════════════════════════ -->
+<div class="checkout-layout">
+
+  <!-- LEFT — FORM STEPS -->
+  <div class="checkout-form-col">
+
+    <!-- STEP 1: Customer Details -->
+    <div class="checkout-step-panel active" id="step-1">
+      <div class="step-panel-header">
+        <div class="step-panel-num">01</div>
+        <div>
+          <h2 class="step-panel-title">Your Details</h2>
+          <p class="step-panel-sub">Tell us where to deliver your order</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name <span class="req">*</span></label>
+          <input type="text" id="firstName" placeholder="Karim">
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name <span class="req">*</span></label>
+          <input type="text" id="lastName" placeholder="Hassan">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="karim@example.com">
+        <span class="form-hint">Your order confirmation will be sent here</span>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phone" placeholder="+20 100 000 0000">
+      </div>
+
+      <div class="form-group">
+        <label for="city">City <span class="req">*</span></label>
+        <select id="city">
+          <option value="" disabled selected>Select your city</option>
+          <option>Cairo</option>
+          <option>Alexandria</option>
+          <option>Giza</option>
+          <option>Luxor</option>
+          <option>Aswan</option>
+          <option>Port Said</option>
+          <option>Suez</option>
+          <option>Mansoura</option>
+          <option>Tanta</option>
+          <option>Asyut</option>
+          <option>Zagazig</option>
+          <option>Ismailia</option>
+          <option>Faiyum</option>
+          <option>Damietta</option>
+          <option>Hurghada</option>
+          <option>Sharm El-Sheikh</option>
+          <option>Minya</option>
+          <option>Beni Suef</option>
+          <option>Sohag</option>
+          <option>Qena</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="area">Area / District <span class="req">*</span></label>
+        <input type="text" id="area" placeholder="e.g. Maadi, Zamalek, Heliopolis">
+      </div>
+
+      <div class="form-group">
+        <label for="street">Street Address <span class="req">*</span></label>
+        <input type="text" id="street" placeholder="Street name and number">
+      </div>
+
+      <div class="form-group">
+        <label for="apartment">Apartment / Floor (optional)</label>
+        <input type="text" id="apartment" placeholder="e.g. Apt 4, Floor 3">
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Order Notes (optional)</label>
+        <textarea id="notes" placeholder="Any special instructions for delivery..."></textarea>
+      </div>
+
+      <div class="payment-method-box">
+        <div class="payment-method-inner">
+          <div class="payment-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div>
+            <span class="payment-title">Cash on Delivery</span>
+            <span class="payment-sub">Pay when your order arrives at your door</span>
+          </div>
+          <div class="payment-check"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+      </div>
+
+      <button class="btn-next" id="btn-to-review">
+        Review Order <i class="fa-solid fa-arrow-right-long"></i>
+      </button>
+    </div>
+
+    <!-- STEP 2: Review -->
+    <div class="checkout-step-panel" id="step-2">
+      <div class="step-panel-header">
+        <div class="step-panel-num">02</div>
+        <div>
+          <h2 class="step-panel-title">Review Your Order</h2>
+          <p class="step-panel-sub">Make sure everything looks right before confirming</p>
+        </div>
+      </div>
+
+      <!-- Delivery Summary -->
+      <div class="review-block">
+        <div class="review-block-header">
+          <span>Delivery To</span>
+          <button class="btn-edit" id="btn-edit-details"><i class="fa-solid fa-pen"></i> Edit</button>
+        </div>
+        <div class="review-details" id="review-details">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- Items Summary -->
+      <div class="review-block">
+        <div class="review-block-header">
+          <span>Items</span>
+          <a href="products.html" class="btn-edit"><i class="fa-solid fa-plus"></i> Add More</a>
+        </div>
+        <div class="review-items" id="review-items">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- Payment method -->
+      <div class="review-block">
+        <div class="review-block-header"><span>Payment</span></div>
+        <div class="review-payment">
+          <i class="fa-solid fa-money-bill-wave"></i>
+          Cash on Delivery
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-back" id="btn-back-to-details">
+          <i class="fa-solid fa-arrow-left-long"></i> Back
+        </button>
+        <button class="btn-next" id="btn-to-confirm">
+          Confirm Order <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Confirmation -->
+    <div class="checkout-step-panel" id="step-3">
+      <div class="confirm-sending" id="confirm-sending">
+        <div class="confirm-spinner">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+        <p>Placing your order...</p>
+      </div>
+
+      <div class="confirm-success" id="confirm-success" style="display:none">
+        <div class="success-icon-wrap">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h2 class="confirm-title">Order Placed!</h2>
+        <p class="confirm-sub">
+          Thank you for your order. A confirmation has been sent to your email.
+          We'll contact you shortly to confirm delivery.
+        </p>
+        <div class="confirm-order-num" id="confirm-order-num">
+          Order #<span id="orderNumber">--</span>
+        </div>
+        <div class="confirm-actions">
+          <a href="../index.html" class="btn-primary">
+            Back to Home <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+          <a href="products.html" class="btn-outline">
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      <div class="confirm-error" id="confirm-error" style="display:none">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Something went wrong. Please try again.</p>
+        <button class="btn-next" id="btn-retry">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT — ORDER SUMMARY -->
+  <div class="checkout-summary-col">
+    <div class="summary-card">
+      <div class="summary-header">
+        <h3 class="summary-title">Order Summary</h3>
+        <span class="summary-count" id="summary-count">0 items</span>
+      </div>
+
+      <div class="summary-items" id="summary-items">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="summary-subtotal">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span id="summary-shipping" class="free-ship">Free</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row summary-total-row">
+          <span>Total</span>
+          <span id="summary-total">$0.00</span>
+        </div>
+      </div>
+
+      <div class="summary-badges">
+        <div class="summary-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Secure Checkout</span>
+        </div>
+        <div class="summary-badge">
+          <i class="fa-solid fa-truck-fast"></i>
+          <span>Fast Delivery</span>
+        </div>
+        <div class="summary-badge">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Easy Returns</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="text">
+    <a href="../index.html" class="footer-logo">Premium Shoes EG</a>
+    <p>Discover the latest trends in footwear and elevate your style with our exclusive collection of sneakers, boots, and more.</p>
+    <span>© 2026 Premium Shoes EG. All rights reserved.</span>
+  </div>
+  <div>
+    <span class="footer-col-title">Quick Links</span>
+    <div class="footer-links">
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact</a>
+      <a href="#">Terms & Conditions</a>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+  <div>
+    <span class="footer-col-title">Follow Us</span>
+    <div class="social-media">
+      <a href="#">Instagram</a>
+      <a href="#">TikTok</a>
+      <a href="#">Twitter / X</a>
+      <a href="#">Facebook</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="../js/helpers.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/checkout.js"></script>
+
+</body>
+</html>

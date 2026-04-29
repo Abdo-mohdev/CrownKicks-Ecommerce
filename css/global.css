@@ -940,9 +940,11 @@ img{display:block;max-width:100%}
 @media(max-width:768px){
   .navbar-top{justify-content:flex-start}
   .navbar-top .navbar-search{display:none}
-  .navbar-logo{flex:1;text-align:center;order:0}
-  .navbar-icons{order:1}
+  .navbar-logo{flex:1;text-align:center;order:0;font-size:18px;letter-spacing:.06em;}
+  .navbar-icons{order:1;gap:14px;}              /* ← updated */
   .hamburger{display:flex;order:-1}
+  .navbar-icons .fa-user{display:none}          /* ← add */
+  .theme-toggle{width:30px;height:30px;font-size:13px}  /* ← add */
   .navbar-links{
     display:none;flex-direction:column;align-items:flex-start;
     gap:0;padding-top:0;border-top:1px solid var(--border);margin-top:0;
@@ -993,6 +995,9 @@ img{display:block;max-width:100%}
   .footer{grid-template-columns:1fr}
   .footer .text{grid-column:1}
   .hero-right{width:95%}
+}
+@media(max-width:400px){
+  .wishlist-icon-wrapper{display:none}
 }
 
 
@@ -1045,7 +1050,7 @@ img{display:block;max-width:100%}
   transform: translate(-50%, -54%);
   z-index: 40;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(48px, 9vw, 108px);
+  font-size: clamp(22px, 5vw, 90px);
   letter-spacing: .18em;
   line-height: 1;
   text-align: center;
@@ -1486,3 +1491,23 @@ body.light-mode::-webkit-scrollbar-thumb {
 .whatsapp-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,.6)}
 .wa-tooltip{position:absolute;right:68px;background:#111;color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;padding:6px 12px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;font-family:sans-serif}
 .whatsapp-float:hover .wa-tooltip{opacity:1}
+
+
+
+@media(max-width:480px){
+  .whatsapp-float {
+    bottom: 80px;  /* push up above toast area */
+    right: 16px;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  .toast-container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+}
+
+
+
