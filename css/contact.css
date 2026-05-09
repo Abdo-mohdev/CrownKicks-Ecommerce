@@ -1,29 +1,5 @@
-    /* ── PAGE HERO ── */
-    .page-hero{
-      position:relative;padding:120px 5% 100px;
-      background:var(--bg);overflow:hidden;
-      border-bottom:1px solid var(--border);
-    }
-    .page-hero-grid{
-      position:absolute;inset:0;pointer-events:none;
-      background-image:linear-gradient(rgba(201,162,39,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(201,162,39,.035) 1px,transparent 1px);
-      background-size:72px 72px;
-      mask-image:radial-gradient(ellipse 80% 80% at 30% 50%,black 40%,transparent 100%);
-    }
-    .page-hero-glow{
-      position:absolute;left:-5%;top:50%;transform:translateY(-50%);
-      width:600px;height:600px;border-radius:50%;
-      background:radial-gradient(ellipse at center,rgba(74,144,217,.18); 0%,transparent 70%);
-      pointer-events:none;
-    }
-    .page-hero-inner{position:relative;z-index:2;max-width:700px;}
-    .page-hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;}
-    .page-hero-eyebrow::before{content:'';display:block;width:32px;height:1.5px;background:var(--gold)}
-    .page-hero-title{font-family:var(--ff-display);font-size:clamp(52px,8vw,100px);line-height:.92;letter-spacing:.03em;color:var(--white);margin-bottom:24px;}
-    .page-hero-title .gold{color:var(--gold)}
-    .page-hero-title .stroke{-webkit-text-stroke:1.5px var(--white);color:transparent;}
-    .page-hero-sub{font-size:clamp(15px,1.6vw,18px);color:var(--text-md);line-height:1.75;max-width:520px;font-weight:500;}
- 
+    /* ── PAGE HERO ── [consolidated in global.css] ──
+
     /* ── CONTACT GRID ── */
     .contact-section{
       padding:7% 5%;
@@ -259,17 +235,7 @@
  
  
  
-    /* ── FOOTER ── */
-    .footer{padding:5% 5% 100px;background:#000;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:40px;align-items:start;border-top:1px solid var(--border);}
-    .footer-logo{font-family:var(--ff-display);font-size:44px;letter-spacing:.1em;color:var(--gold);display:block;margin-bottom:16px;transition:opacity var(--trans);}
-    .footer-logo:hover{opacity:.8}
-    .footer .text p{font-size:15px;color:var(--text);line-height:1.8;max-width:320px;margin-bottom:20px;}
-    .footer .text span{color:var(--gold);font-size:13px;font-style:italic}
-    .footer-col-title{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--white);margin-bottom:16px;display:block;}
-    .footer-links{display:flex;flex-direction:column;gap:10px}
-    .footer-links a,.footer .social-media a{color:var(--text);font-size:14px;transition:color var(--trans),padding-left var(--trans);}
-    .footer-links a:hover,.footer .social-media a:hover{color:var(--gold);padding-left:4px}
-    .footer .social-media{display:flex;flex-direction:column;gap:10px}
+    /* Footer - consolidated in global.css */
  
     /* ── RESPONSIVE ── */
     @media(max-width:900px){
