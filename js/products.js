@@ -11,7 +11,16 @@ let filterLimited  = false;
 let filterInStock  = false;
 let activeSort     = 'default';
 let searchQuery    = '';
- 
+
+// Fallback for this page if helpers.js is cached or not loaded yet.
+if (typeof resolveAssetPath !== 'function') {
+  window.resolveAssetPath = function (src) {
+    if (!src) return '';
+    if (/^(https?:)?\/\//.test(src) || src.startsWith('data:')) return src;
+    return window.location.pathname.includes('/pages/') ? '../' + src : src;
+  };
+}
+
 
 /* ═══════════════════════════════════════
    direct links with ?filter=... (e.g. from homepage)
@@ -37,25 +46,51 @@ if (filterFromURL) {
 ═══════════════════════════════════════ */
 async function loadProducts() {
   await loadProductsData('../data/products.json');
-  console.log("Loaded:", allProducts);
-  applyFilters();
+  displaySambaCollection();
+  displayUpcomingCollection();
 }
- 
+
+/* ═══════════════════════════════════════
+   DISPLAY SAMBA COLLECTION
+═══════════════════════════════════════ */
+function displaySambaCollection() {
+  const sambas = allProducts.filter(p => p.brand === 'Adidas' && p.name.includes('Samba'));
+  const sambaGrid = document.getElementById('samba-grid');
+  if (sambaGrid && sambas.length) {
+    sambaGrid.innerHTML = sambas.map(createProductCard).join('');
+    attachCardListeners();
+  }
+}
+
+/* ═══════════════════════════════════════
+   DISPLAY UPCOMING COLLECTION
+═══════════════════════════════════════ */
+function displayUpcomingCollection() {
+  const upcoming = allProducts.filter(p => p.isComingSoon);
+  const featuredGrid = document.getElementById('featured-grid');
+  if (featuredGrid && upcoming.length) {
+    featuredGrid.innerHTML = upcoming.map(createProductCard).join('');
+    attachCardListeners();
+  }
+}
+
 /* ═══════════════════════════════════════
    CREATE CARD HTML — with wishlist support
 ═══════════════════════════════════════ */
 function createProductCard(p) {
   const finalPrice = calculateFinalPrice(p);
   const wished = (typeof favorites !== 'undefined') ? favorites.includes(p.id) : false;
+  const needsOptions = p.homeDrop && ((p.sizes && p.sizes.length) || (p.colors && p.colors.length));
   return `
-  <div class="product-card" data-category="${p.category}" data-product-id="${p.id}">
+  <div class="product-card ${p.isComingSoon ? 'coming-soon' : ''}" data-category="${p.category}" ${p.isComingSoon ? '' : `data-product-id="${p.id}"`}>
     <div class="product-img">
       <button class="favorite-btn ${wished?'active':''}" data-id="${p.id}">
         <i class="fa-${wished?'solid':'regular'} fa-heart"></i>
       </button>
-      <img src="${p.image}" alt="${p.name}" loading="lazy">
+      <img src="${resolveAssetPath(p.image)}" alt="${p.name}" loading="lazy">
       ${p.isOnSale  ? `<span class="sale-tag">-${p.discount}%</span>` : ''}
-      ${p.isNew     ? `<span class="new-badge"><i class="fa-solid fa-star"></i> NEW</span>` : ''}
+      ${p.isNew && !p.isComingSoon ? `<span class="new-badge"><i class="fa-solid fa-star"></i> NEW</span>` : ''}
+      ${p.isComingSoon && p.isInStock ? `<span class="coming-soon-badge">Coming Soon</span>` : ''}
       ${!p.isInStock? `<div class="out-of-stock">Out of Stock</div>` : ''}
     </div>
     <div class="product-info">
@@ -67,19 +102,20 @@ function createProductCard(p) {
         <span class="reviews">(${p.reviews})</span>
       </div>
       <span class="product-price">
-        ${p.isOnSale ? `<span class="orig-price">$${p.price}</span><span class="sale-price">$${finalPrice}</span>` : `<span>$${p.price}</span>`}
+        ${p.isOnSale ? `<span class="orig-price">EGP ${p.price}</span><span class="sale-price">EGP ${finalPrice}</span>` : `<span>EGP ${p.price}</span>`}
       </span>
-      <button class="add-to-cart"
+      <button class="${needsOptions ? 'view-product-btn' : 'add-to-cart'}"
+        data-id="${p.id}"
         data-name="${p.name}" data-brand="${p.brand}"
         data-price="${finalPrice}" data-img="${p.image}"
         data-category="${p.category}"
-        ${!p.isInStock?'disabled':''}>
-        ${p.isInStock ? 'Add to Cart' : 'Out of Stock'}
+        ${!p.isInStock || p.isComingSoon?'disabled':''}>
+        ${!p.isInStock ? 'Out of Stock' : (p.isComingSoon ? 'Coming Soon' : (needsOptions ? 'View Sizes' : 'Add to Cart'))}
       </button>
     </div>
   </div>`;
 }
- 
+
 /* ═══════════════════════════════════════
    FILTER + SORT LOGIC
 ═══════════════════════════════════════ */
@@ -116,39 +152,68 @@ function getFiltered() {
   }
   return list;
 }
- 
+
 function applyFilters() {
   syncBrands();
   renderActiveTags();
-  
+
   const filtered = getFiltered();
   const grid     = document.getElementById('products-grid');
   const noRes    = document.getElementById('no-results');
- 
-  document.getElementById('shown-count').textContent = filtered.length;
- 
+
+  const shownCount = document.getElementById('shown-count');
+  if (shownCount) shownCount.textContent = filtered.length;
+
   if (!filtered.length) {
-    grid.innerHTML = '';
-    noRes.classList.add('show');
+    if (grid) grid.innerHTML = '';
+    if (noRes) noRes.classList.add('show');
   } else {
-    noRes.classList.remove('show');
+    if (noRes) noRes.classList.remove('show');
+    if (!grid) return;
     grid.innerHTML = filtered.map(createProductCard).join('');
     attachCardListeners();
     runScrollReveal();
   }
- 
+
   showResetBtn();
 }
- 
+
 /* ═══════════════════════════════════════
    CARD LISTENERS (favor + wishlist)
 ═══════════════════════════════════════ */
 function attachCardListeners() {
-  document.querySelectorAll('.favorite-btn').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); toggleFavorite(Number(btn.dataset.id)); });
+  // Handled globally in helpers.js
+}
+
+function runScrollReveal() {
+  const cards = document.querySelectorAll('.product-card');
+  if (!cards.length) return;
+
+  if (!('IntersectionObserver' in window)) {
+    cards.forEach(card => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.1 });
+
+  cards.forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(24px)';
+    card.style.transition = 'opacity .5s ease, transform .55s ease';
+    observer.observe(card);
   });
 }
- 
+
 /* ═══════════════════════════════════════
    CATEGORY CHIPS
 ═══════════════════════════════════════ */
@@ -160,25 +225,28 @@ document.querySelectorAll('.fchip[data-filter]').forEach(chip => {
     applyFilters();
   });
 });
- 
+
 /* ═══════════════════════════════════════
    BRAND CHECKBOXES
 ═══════════════════════════════════════ */
 function syncBrands() {
   activeBrands = [...document.querySelectorAll('input[name="brand"]:checked')].map(cb=>cb.value);
 }
- 
+
 /* ═══════════════════════════════════════
    SORT SELECT
 ═══════════════════════════════════════ */
-document.getElementById('sort-select').addEventListener('change', function() { activeSort=this.value; applyFilters(); });
+const sortSelect = document.getElementById('sort-select');
+if (sortSelect) {
+  sortSelect.addEventListener('change', function() { activeSort=this.value; applyFilters(); });
+}
 
 
 /* ═══════════════════════════════════════
    ACCORDION
 ═══════════════════════════════════════ */
 function toggleFG(head) { head.closest('.filter-group').classList.toggle('collapsed'); }
- 
+
 /* ═══════════════════════════════════════
    PRICE RANGE DUAL SLIDER
 ═══════════════════════════════════════ */
@@ -192,73 +260,82 @@ function updatePriceRange() {
     document.getElementById('range-max').value=mx;
   }
   priceMin=mn; priceMax=mx;
-  document.getElementById('price-min-label').textContent=`$${mn}`;
-  document.getElementById('price-max-label').textContent=`$${mx}`;
+  document.getElementById('price-min-label').textContent=`EGP ${mn}`;
+  document.getElementById('price-max-label').textContent=`EGP ${mx}`;
   const pct=(v,min=0,max=350)=>((v-min)/(max-min))*100;
   const fill=document.getElementById('range-fill');
   fill.style.left=pct(mn)+'%';
   fill.style.width=(pct(mx)-pct(mn))+'%';
   applyFilters();
 }
- 
- 
+
+
 /* ═══════════════════════════════════════
    AVAILABILITY CHECKBOXES
 ═══════════════════════════════════════ */
-document.getElementById('filter-instock').addEventListener('change',function(){filterInStock=this.checked;applyFilters()});
-document.getElementById('filter-sale')   .addEventListener('change',function(){filterSale=this.checked;applyFilters()});
-document.getElementById('filter-new')    .addEventListener('change',function(){filterNew=this.checked;applyFilters()});
-document.getElementById('filter-limited').addEventListener('change',function(){filterLimited=this.checked;applyFilters()});
- 
+const stockFilter = document.getElementById('filter-instock');
+const saleFilter = document.getElementById('filter-sale');
+const newFilter = document.getElementById('filter-new');
+const limitedFilter = document.getElementById('filter-limited');
+if (stockFilter) stockFilter.addEventListener('change',function(){filterInStock=this.checked;applyFilters()});
+if (saleFilter) saleFilter.addEventListener('change',function(){filterSale=this.checked;applyFilters()});
+if (newFilter) newFilter.addEventListener('change',function(){filterNew=this.checked;applyFilters()});
+if (limitedFilter) limitedFilter.addEventListener('change',function(){filterLimited=this.checked;applyFilters()});
+
 /* ═══════════════════════════════════════
    ACTIVE FILTER TAGS
 ═══════════════════════════════════════ */
 function renderActiveTags() {
   const cont = document.getElementById('active-tags');
+  if (!cont) return;
   const tags = [];
   if (searchQuery)              tags.push({label:`"${searchQuery}"`,   clear:()=>{searchQuery='';document.getElementById('searchInput').value='';applyFilters()}});
   if (activeCategory!=='all')   tags.push({label:activeCategory,       clear:()=>{activeCategory='all';document.querySelector('.fchip[data-filter="all"]').click()}});
   activeBrands.forEach(b=>      tags.push({label:b,                    clear:()=>{document.querySelector(`input[name="brand"][value="${b}"]`).checked=false;syncBrands();applyFilters()}}));
-  if (priceMin>0)               tags.push({label:`From $${priceMin}`,  clear:()=>{document.getElementById('range-min').value=0;updatePriceRange()}});
-  if (priceMax<350)             tags.push({label:`To $${priceMax}`,    clear:()=>{document.getElementById('range-max').value=350;updatePriceRange()}});
+  if (priceMin>0)               tags.push({label:`From EGP ${priceMin}`,  clear:()=>{document.getElementById('range-min').value=0;updatePriceRange()}});
+  if (priceMax<350)             tags.push({label:`To EGP ${priceMax}`,    clear:()=>{document.getElementById('range-max').value=350;updatePriceRange()}});
   if (filterSale)               tags.push({label:'On Sale',            clear:()=>{document.getElementById('filter-sale').checked=false;filterSale=false;applyFilters()}});
   if (filterNew)                tags.push({label:'New',                clear:()=>{document.getElementById('filter-new').checked=false;filterNew=false;applyFilters()}});
   if (filterLimited)            tags.push({label:'Limited',            clear:()=>{document.getElementById('filter-limited').checked=false;filterLimited=false;applyFilters()}});
   if (filterInStock)            tags.push({label:'In Stock',           clear:()=>{document.getElementById('filter-instock').checked=false;filterInStock=false;applyFilters()}});
- 
+
   cont.innerHTML = tags.map((t,i)=>`
     <span class="atag">${t.label}<span class="atag-x" data-i="${i}">✕</span></span>`).join('')+
     (tags.length>1?`<button class="clear-all-tags" onclick="resetAll()">Clear all</button>`:'');
- 
+
   window.__tags=tags;
   cont.querySelectorAll('.atag-x').forEach(x=>x.addEventListener('click',()=>window.__tags[Number(x.dataset.i)].clear()));
 }
- 
+
 /* ═══════════════════════════════════════
    RESET ALL
 ═══════════════════════════════════════ */
 function resetAll() {
-  searchQuery=''; document.getElementById('searchInput').value='';
+  searchQuery='';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value='';
   activeCategory='all'; activeBrands=[]; activeRating=0;
   priceMin=0; priceMax=350;
   filterSale=filterNew=filterLimited=filterInStock=false; activeSort='default';
   document.querySelectorAll('input[name="brand"]').forEach(cb=>cb.checked=false);
-  document.getElementById('range-min').value=0;
-  document.getElementById('range-max').value=350;
-  ['filter-sale','filter-new','filter-limited','filter-instock'].forEach(id=>document.getElementById(id).checked=false);
-  document.getElementById('sort-select').value='default';
+  if (document.getElementById('range-min')) document.getElementById('range-min').value=0;
+  if (document.getElementById('range-max')) document.getElementById('range-max').value=350;
+  ['filter-sale','filter-new','filter-limited','filter-instock'].forEach(id=>{ const el=document.getElementById(id); if (el) el.checked=false; });
+  if (document.getElementById('sort-select')) document.getElementById('sort-select').value='default';
   document.querySelectorAll('.fchip[data-filter]').forEach(c=>c.classList.remove('active'));
   document.querySelector('.fchip[data-filter="all"]').classList.add('active');
   updatePriceRange();
 }
- 
+
 function showResetBtn() {
   const has = activeBrands.length||priceMin>0||priceMax<350||
     filterSale||filterNew||filterLimited||filterInStock||activeCategory!=='all'||searchQuery;
-  document.getElementById('btn-reset').classList.toggle('visible', !!has);
+  const resetBtn = document.getElementById('btn-reset');
+  if (resetBtn) resetBtn.classList.toggle('visible', !!has);
 }
-document.getElementById('btn-reset').addEventListener('click', resetAll);
- 
+const resetBtn = document.getElementById('btn-reset');
+if (resetBtn) resetBtn.addEventListener('click', resetAll);
+
 /* ═══════════════════════════════════════
    SEARCH — live filter + scroll to grid
 ═══════════════════════════════════════ */
@@ -271,16 +348,16 @@ const searchInputs = [
 
 searchInputs.forEach(input => {
   if (!input) return; // في حالة البحث عن element ما موجود
-  
+
   input.addEventListener('input', function() {
     searchQuery = this.value.trim();
     applyFilters();
-    
+
     // Sync القيمة بين الـ desktop و mobile search
     searchInputs.forEach(si => {
       if (si && si !== this) si.value = this.value;
     });
-    
+
     // Scroll to results عندما يكتب
     if (searchQuery) {
       setTimeout(() => {

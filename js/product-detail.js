@@ -1,15 +1,16 @@
-/* ═══════════════════════════════════════════════════════════════
-   PRODUCT DETAIL PAGE - product-detail.js
-   
-   FIXES vs previous version:
-   1. qty resets to 1 on every product load  (was carrying stale value)
-   2. Toast shows qty × price  (was showing per-unit only)
-   3. Cart badge updates instantly after add
-   4. Add to Cart button resets cleanly with the correct icon
-═══════════════════════════════════════════════════════════════ */
+/* Product detail page: renders the selected product, gallery, options, cart, and recommendations. */
  
 let currentProduct   = null;
 let selectedQuantity = 1;   /* always reset to 1 inside displayProductDetails */
+
+// Local fallback so product details can render images even if helper scripts are cached.
+if (typeof resolveAssetPath !== 'function') {
+  window.resolveAssetPath = function (src) {
+    if (!src) return '';
+    if (/^(https?:)?\/\//.test(src) || src.startsWith('data:')) return src;
+    return window.location.pathname.includes('/pages/') ? '../' + src : src;
+  };
+}
  
 /* ═══════════════════════════════════════════
    GET PRODUCT ID FROM URL
@@ -73,14 +74,14 @@ function displayProductDetails(product) {
     : product.price.toFixed(2);
  
   const priceEl = document.getElementById('currentPrice');
-  if (priceEl) priceEl.textContent = `$${finalPrice}`;
+  if (priceEl) priceEl.textContent = `EGP ${finalPrice}`;
  
   const origEl    = document.getElementById('originalPrice');
   const badgeEl   = document.getElementById('saleBadge');
   const pctEl     = document.getElementById('salePercent');
  
   if (product.isOnSale) {
-    if (origEl)  { origEl.style.display = 'inline'; origEl.textContent = `$${product.price.toFixed(2)}`; }
+    if (origEl)  { origEl.style.display = 'inline'; origEl.textContent = `EGP ${product.price.toFixed(2)}`; }
     if (badgeEl)  badgeEl.style.display  = 'block';
     if (pctEl)    pctEl.textContent      = `-${product.discount}%`;
   } else {
@@ -127,7 +128,7 @@ function displayProductDetails(product) {
   const colorsEl = document.querySelector('.color-options');
   if (colorsEl && product.colors) {
     colorsEl.innerHTML = product.colors.map((color, i) =>
-      `<button class="color-btn ${i === 0 ? 'active' : ''}" title="${color}">
+      `<button class="color-btn ${i === 0 ? 'active' : ''}" data-color="${color}" title="${color}">
          <span>${color}</span>
        </button>`
     ).join('');
@@ -143,15 +144,19 @@ function displayProductDetails(product) {
  
   /* main image */
   const mainImg = document.getElementById('mainImage');
-  if (mainImg) mainImg.src = product.image;
+  if (mainImg) mainImg.src = resolveAssetPath(product.image);
  
-  /* thumbnail gallery — 4 thumbnails */
+  /* thumbnail gallery - show the 4 preview images under the main product image */
   const gallery = document.querySelector('.thumbnail-gallery');
   if (gallery) {
-    gallery.innerHTML = Array(4).fill(product.image).map((img, i) =>
-      `<div class="thumbnail ${i === 0 ? 'active' : ''}" onclick="changeMainImage('${img}', this)">
-         <img src="${img}" alt="View ${i + 1}">
-       </div>`
+    const previewImages = (product.gallery && product.gallery.length > 1)
+      ? product.gallery.slice(1)
+      : [product.image, product.image, product.image, product.image];
+
+    gallery.innerHTML = previewImages.map((img, i) =>
+      `<div class="thumbnail ${i === 0 ? 'active' : ''}" onclick="changeMainImage('${resolveAssetPath(img)}', this)">
+      <img src="${resolveAssetPath(img)}" alt="View ${i + 1}">
+      </div>`
     ).join('');
   }
  
@@ -187,31 +192,102 @@ function updateWishlistButton() {
 /* ═══════════════════════════════════════════
    QUANTITY CONTROLS
 ═══════════════════════════════════════════ */
-document.getElementById('qtyMinus')?.addEventListener('click', () => {
-  const input = document.getElementById('quantity');
-  if (!input) return;
-  const next = Number(input.value) - 1;
-  input.value      = Math.max(1, next);
-  selectedQuantity = Number(input.value);
-});
- 
-document.getElementById('qtyPlus')?.addEventListener('click', () => {
-  const input = document.getElementById('quantity');
-  if (!input) return;
-  const next = Number(input.value) + 1;
-  input.value      = Math.min(10, next);
-  selectedQuantity = Number(input.value);
-});
- 
-document.getElementById('quantity')?.addEventListener('change', () => {
-  const input = document.getElementById('quantity');
-  if (!input) return;
-  let v = Number(input.value);
-  if (isNaN(v) || v < 1)  v = 1;
-  if (v > 10)              v = 10;
-  input.value      = v;
-  selectedQuantity = v;
-});
+/* ═══════════════════════════════════════════
+   QUANTITY CONTROLS
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.getElementById('qtyMinus')?.addEventListener('click', () => {
+    const input = document.getElementById('quantity');
+    if (!input) return;
+    const next = Number(input.value) - 1;
+    input.value      = Math.max(1, next);
+    selectedQuantity = Number(input.value);
+  });
+
+  document.getElementById('qtyPlus')?.addEventListener('click', () => {
+    const input = document.getElementById('quantity');
+    if (!input) return;
+    const next = Number(input.value) + 1;
+    input.value      = Math.min(10, next);
+    selectedQuantity = Number(input.value);
+  });
+
+  document.getElementById('quantity')?.addEventListener('change', () => {
+    const input = document.getElementById('quantity');
+    if (!input) return;
+    let v = Number(input.value);
+    if (isNaN(v) || v < 1)  v = 1;
+    if (v > 10)              v = 10;
+    input.value      = v;
+    selectedQuantity = v;
+  });
+
+  /* ═══════════════════════════════════════════
+     ADD TO CART
+  ═══════════════════════════════════════════ */
+  document.getElementById('addToCartBtn')?.addEventListener('click', () => {
+    if (!currentProduct) return;
+    const selectedSize  = getSelectedOption('.size-btn', 'size');
+    const selectedColor = getSelectedOption('.color-btn', 'color');
+    if (currentProduct.sizes && currentProduct.sizes.length && !selectedSize) {
+      showToast('Select Size', 'Choose a size before adding to cart', 'error');
+      return;
+    }
+    if (currentProduct.colors && currentProduct.colors.length && !selectedColor) {
+      showToast('Select Color', 'Choose a color before adding to cart', 'error');
+      return;
+    }
+    const unitPrice = currentProduct.isOnSale
+      ? Number((currentProduct.price * (1 - currentProduct.discount / 100)).toFixed(2))
+      : Number(currentProduct.price.toFixed(2));
+    const totalPrice = (unitPrice * selectedQuantity).toFixed(2);
+    const cartId   = getCartItemId(currentProduct.id, currentProduct.name, selectedSize, selectedColor);
+    const existing = cart.find(i => i.id === cartId);
+    if (existing) {
+      existing.qty += selectedQuantity;
+    } else {
+      cart.push({
+        id:    cartId,
+        productId: currentProduct.id,
+        name:  currentProduct.name,
+        brand: currentProduct.brand,
+        price: unitPrice,
+        img:   currentProduct.image,
+        size:  selectedSize,
+        color: selectedColor,
+        qty:   selectedQuantity,
+      });
+    }
+    updateCartCount();
+    renderCart();
+    saveCart();
+    if (typeof showToast === 'function') {
+      const qtyLabel = selectedQuantity > 1 ? ` / ${selectedQuantity}x` : '';
+      showToast('Added to Cart', `${currentProduct.name}${qtyLabel} / EGP ${totalPrice}`, 'success');
+    }
+    const btn = document.getElementById('addToCartBtn');
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart';
+      btn.disabled  = true;
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+        btn.disabled  = !currentProduct.isInStock;
+      }, 2000);
+    }
+  });
+
+  /* ═══════════════════════════════════════════
+     ADD TO WISHLIST
+  ═══════════════════════════════════════════ */
+  document.getElementById('addToWishlistBtn')?.addEventListener('click', e => {
+    if (!currentProduct) return;
+    e.stopPropagation();
+    toggleFavorite(currentProduct.id);
+    setTimeout(() => updateWishlistButton(), 0);
+  });
+
+}); // ← closes the DOMContentLoaded
  
 /* ═══════════════════════════════════════════
    COLOR & SIZE SELECTION
@@ -230,71 +306,14 @@ function addColorSizeListeners() {
     });
   });
 }
+
+function getSelectedOption(selector, attrName) {
+  const active = document.querySelector(selector + '.active');
+  if (!active) return '';
+  return active.dataset[attrName] || active.textContent.trim();
+}
  
-/* ═══════════════════════════════════════════
-   ADD TO CART
-═══════════════════════════════════════════ */
-document.getElementById('addToCartBtn')?.addEventListener('click', () => {
-  if (!currentProduct) return;
- 
-  const unitPrice = currentProduct.isOnSale
-    ? Number((currentProduct.price * (1 - currentProduct.discount / 100)).toFixed(2))
-    : Number(currentProduct.price.toFixed(2));
- 
-  /* ── FIX 2: total price = unit × qty for the toast ── */
-  const totalPrice = (unitPrice * selectedQuantity).toFixed(2);
- 
-  const cartId   = currentProduct.name.toLowerCase().replace(/\s+/g, '-');
-  const existing = cart.find(i => i.id === cartId);
- 
-  if (existing) {
-    existing.qty += selectedQuantity;
-  } else {
-    cart.push({
-      id:    cartId,
-      name:  currentProduct.name,
-      brand: currentProduct.brand,
-      price: unitPrice,
-      img:   currentProduct.image,
-      qty:   selectedQuantity,
-    });
-  }
- 
-  /* ── FIX 3: badge + sidebar update immediately ── */
-  updateCartCount();
-  renderCart();
- 
-  /* toast with correct total */
-  if (typeof showToast === 'function') {
-    const qtyLabel = selectedQuantity > 1 ? ` · ${selectedQuantity}x` : '';
-    showToast(
-      'Added to Cart',
-      `${currentProduct.name}${qtyLabel} · $${totalPrice}`,
-      'success'
-    );
-  }
- 
-  /* ── FIX 4: button feedback resets with correct icon ── */
-  const btn = document.getElementById('addToCartBtn');
-  if (btn) {
-    btn.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart';
-    btn.disabled  = true;
-    setTimeout(() => {
-      btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
-      btn.disabled  = !currentProduct.isInStock;
-    }, 2000);
-  }
-});
- 
-/* ═══════════════════════════════════════════
-   ADD TO WISHLIST
-═══════════════════════════════════════════ */
-document.getElementById('addToWishlistBtn')?.addEventListener('click', e => {
-  if (!currentProduct) return;
-  e.stopPropagation();
-  toggleFavorite(currentProduct.id);
-  setTimeout(() => updateWishlistButton(), 0);
-});
+
  
 /* ═══════════════════════════════════════════
    RECOMMENDED PRODUCTS
@@ -326,7 +345,7 @@ function displayRecommendedProducts() {
           <button class="favorite-btn ${wished ? 'active' : ''}" data-id="${p.id}">
             <i class="fa-${wished ? 'solid' : 'regular'} fa-heart"></i>
           </button>
-          <img src="${p.image}" alt="${p.name}">
+          <img src="${resolveAssetPath(p.image)}" alt="${p.name}">
           ${p.isOnSale  ? `<span class="sale-tag">-${p.discount}%</span>` : ''}
           ${p.isNew     ? `<span class="new-badge"><i class="fa-solid fa-star"></i> NEW</span>` : ''}
           ${!p.isInStock? `<div class="out-of-stock">Out of Stock</div>` : ''}
@@ -341,8 +360,8 @@ function displayRecommendedProducts() {
           </div>
           <span class="product-price">
             ${p.isOnSale
-              ? `<span class="orig-price">$${p.price}</span><span class="sale-price">$${fp}</span>`
-              : `$${p.price}`}
+              ? `<span class="orig-price">EGP ${p.price}</span><span class="sale-price">EGP ${fp}</span>`
+              : `EGP ${p.price}`}
           </span>
         </div>
       </div>`;

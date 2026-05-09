@@ -408,6 +408,9 @@
   font-size: 13px; font-weight: 700; color: var(--white);
   line-height: 1.3;
 }
+.summary-item-variant {
+  font-size: 11px; color: var(--text); margin-top: 2px;
+}
 .summary-item-qty {
   font-size: 11px; color: var(--text); margin-top: 2px;
 }

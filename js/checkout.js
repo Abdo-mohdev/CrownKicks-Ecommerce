@@ -20,6 +20,37 @@ emailjs.init(EJ_PUBLIC_KEY);
 let currentStep = 1;
 let orderDetails = {};
 
+function formatMoney(amount) {
+  return 'EGP ' + Number(amount).toFixed(2);
+}
+
+function getItemVariantText(item) {
+  return [item.size ? 'Size ' + item.size : '', item.color || ''].filter(Boolean).join(' / ');
+}
+
+function saveLocalOrder(order) {
+  // Temporary local order storage until Firebase replaces this.
+  try {
+    const orders = JSON.parse(localStorage.getItem('pseg_orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('pseg_orders', JSON.stringify(orders));
+  } catch (e) {
+    console.warn('Could not save local order:', e);
+  }
+}
+
+function escapeHTML(value) {
+  return String(value || '').replace(/[&<>"']/g, function (char) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char];
+  });
+}
+
 /* ─────────────────────────────────────────
    INIT — check cart on load
 ───────────────────────────────────────── */
@@ -72,9 +103,9 @@ function renderSummary() {
   const total      = subtotal + shipping;
 
   if (countEl) countEl.textContent = totalItems + ' item' + (totalItems !== 1 ? 's' : '');
-  if (subEl)   subEl.textContent   = '$' + subtotal.toFixed(2);
-  if (shipEl)  shipEl.textContent  = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
-  if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+  if (subEl)   subEl.textContent   = formatMoney(subtotal);
+  if (shipEl)  shipEl.textContent  = shipping === 0 ? 'Free' : formatMoney(shipping);
+  if (totalEl) totalEl.textContent = formatMoney(total);
 
   container.innerHTML = cart.map(function (item) {
     return `
@@ -82,9 +113,10 @@ function renderSummary() {
         <img class="summary-item-img" src="${item.img}" alt="${item.name}">
         <div class="summary-item-info">
           <div class="summary-item-name">${item.name}</div>
+          ${getItemVariantText(item) ? `<div class="summary-item-variant">${getItemVariantText(item)}</div>` : ''}
           <div class="summary-item-qty">Qty: ${item.qty}</div>
         </div>
-        <span class="summary-item-price">$${(item.price * item.qty).toFixed(2)}</span>
+        <span class="summary-item-price">${formatMoney(item.price * item.qty)}</span>
       </div>`;
   }).join('');
 }
@@ -145,9 +177,19 @@ function validateStep1() {
     // scroll to first error
     const firstError = document.querySelector('.form-group input.error, .form-group select.error');
     if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
   }
 
-  return valid;
+  const emailEl = document.getElementById('email');
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim());
+  if (!emailOk) {
+    emailEl.classList.add('error');
+    showToast('Invalid Email', 'Please enter a valid email address', 'error');
+    emailEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+
+  return true;
 }
 
 function buildOrderDetails() {
@@ -182,24 +224,24 @@ function renderReview() {
   detailsEl.innerHTML = `
     <div class="review-detail-row">
       <span class="review-detail-label">Name</span>
-      <span class="review-detail-value">${orderDetails.firstName} ${orderDetails.lastName}</span>
+      <span class="review-detail-value">${escapeHTML(orderDetails.firstName)} ${escapeHTML(orderDetails.lastName)}</span>
     </div>
     <div class="review-detail-row">
       <span class="review-detail-label">Email</span>
-      <span class="review-detail-value">${orderDetails.email}</span>
+      <span class="review-detail-value">${escapeHTML(orderDetails.email)}</span>
     </div>
     <div class="review-detail-row">
       <span class="review-detail-label">Phone</span>
-      <span class="review-detail-value">${orderDetails.phone}</span>
+      <span class="review-detail-value">${escapeHTML(orderDetails.phone)}</span>
     </div>
     <div class="review-detail-row">
       <span class="review-detail-label">Address</span>
-      <span class="review-detail-value">${address}</span>
+      <span class="review-detail-value">${escapeHTML(address)}</span>
     </div>
     ${orderDetails.notes ? `
     <div class="review-detail-row">
       <span class="review-detail-label">Notes</span>
-      <span class="review-detail-value">${orderDetails.notes}</span>
+      <span class="review-detail-value">${escapeHTML(orderDetails.notes)}</span>
     </div>` : ''}
   `;
 
@@ -209,9 +251,9 @@ function renderReview() {
         <img class="review-item-img" src="${item.img}" alt="${item.name}">
         <div class="review-item-info">
           <div class="review-item-name">${item.name}</div>
-          <div class="review-item-brand">${item.brand} · Qty ${item.qty}</div>
+          <div class="review-item-brand">${[item.brand, getItemVariantText(item), 'Qty ' + item.qty].filter(Boolean).join(' / ')}</div>
         </div>
-        <span class="review-item-price">$${(item.price * item.qty).toFixed(2)}</span>
+        <span class="review-item-price">${formatMoney(item.price * item.qty)}</span>
       </div>`;
   }).join('');
 }
@@ -247,14 +289,27 @@ function placeOrder() {
   // generate order number
   const orderNum = 'PSE-' + Date.now().toString().slice(-6);
 
-  // build items string for email
-  const itemsList = cart.map(function (item) {
-    return item.name + ' x' + item.qty + ' — $' + (item.price * item.qty).toFixed(2);
-  }).join('\n');
-
   const subtotal = cart.reduce(function (s, i) { return s + i.price * i.qty; }, 0);
   const shipping = subtotal >= 100 ? 0 : 10;
   const total    = subtotal + shipping;
+
+  const orderItems = cart.map(function (item) {
+    return {
+      productId: item.productId || null,
+      name: item.name,
+      brand: item.brand,
+      size: item.size || '',
+      color: item.color || '',
+      qty: item.qty,
+      unitPrice: item.price,
+      lineTotal: Number((item.price * item.qty).toFixed(2))
+    };
+  });
+
+  const itemsList = orderItems.map(function (item) {
+    const variant = [item.size ? 'Size ' + item.size : '', item.color].filter(Boolean).join(' / ');
+    return item.name + (variant ? ' (' + variant + ')' : '') + ' x' + item.qty + ' - ' + formatMoney(item.lineTotal);
+  }).join('\n');
 
   const address = [
     orderDetails.street,
@@ -262,6 +317,32 @@ function placeOrder() {
     orderDetails.area,
     orderDetails.city
   ].filter(Boolean).join(', ');
+
+  const order = {
+    orderNumber: orderNum,
+    createdAt: new Date().toISOString(),
+    status: 'pending_confirmation',
+    paymentMethod: 'Cash on Delivery',
+    customer: {
+      name: orderDetails.firstName + ' ' + orderDetails.lastName,
+      email: orderDetails.email,
+      phone: orderDetails.phone
+    },
+    delivery: {
+      city: orderDetails.city,
+      area: orderDetails.area,
+      street: orderDetails.street,
+      apartment: orderDetails.apartment,
+      address: address,
+      notes: orderDetails.notes || ''
+    },
+    items: orderItems,
+    totals: {
+      subtotal: Number(subtotal.toFixed(2)),
+      shipping: Number(shipping.toFixed(2)),
+      total: Number(total.toFixed(2))
+    }
+  };
 
   // EmailJS template variables
   const templateParams = {
@@ -272,9 +353,9 @@ function placeOrder() {
     delivery_address: address,
     order_notes    : orderDetails.notes || 'None',
     items_list     : itemsList,
-    subtotal       : '$' + subtotal.toFixed(2),
-    shipping       : shipping === 0 ? 'Free' : '$' + shipping.toFixed(2),
-    total          : '$' + total.toFixed(2),
+    subtotal       : formatMoney(subtotal),
+    shipping       : shipping === 0 ? 'Free' : formatMoney(shipping),
+    total          : formatMoney(total),
     payment_method : 'Cash on Delivery',
   };
 
@@ -285,10 +366,13 @@ function placeOrder() {
       document.getElementById('confirm-success').style.display = 'flex';
       document.getElementById('orderNumber').textContent = orderNum;
 
-      // clear cart after successful order
+      saveLocalOrder(order);
+
+      // Clear cart after successful order and persist that cleared state.
       cart = [];
       updateCartCount();
       renderCart();
+      saveCart();
 
       showToast('Order Placed!', 'Check your email for confirmation', 'success');
     })

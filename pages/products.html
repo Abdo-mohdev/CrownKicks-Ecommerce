@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products — Premium Shoes EG</title>
+    <title>Products | Premium Shoes EG</title>
+  <meta name="description" content="Browse Premium Shoes EG original outlet sneaker products, including available Adidas Samba pairs and upcoming outlet drops.">
+  <meta name="keywords" content="Premium Shoes EG products, Adidas Samba outlet, original outlet sneakers, Egypt shoe store">
+  <meta name="author" content="Premium Shoes EG">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#080C10">
+  <meta property="og:title" content="Products | Premium Shoes EG">
+  <meta property="og:description" content="Browse Premium Shoes EG original outlet sneaker products, including available Adidas Samba pairs and upcoming outlet drops.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="../assets/images/banner-1.png">
+  <meta name="twitter:card" content="summary_large_image">
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23080C10'/%3E%3Ctext x='32' y='46' font-family='Arial Black,sans-serif' font-size='36' font-weight='900' text-anchor='middle' fill='%234FA3E0'%3EP%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="assets/icon-192.png">
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/products.css">
@@ -21,7 +31,7 @@
 <!-- ══════════════════════════════════════
      NAVBAR
 ══════════════════════════════════════ -->
-<p class="offer"> Free shipping <span> on orders over $100</span></p>
+<p class="offer"> Free shipping <span> on orders over EGP 100</span></p>
 
 <nav class="navbar">
   <div class="navbar-top">
@@ -59,7 +69,7 @@
       <button><i class="fas fa-search"></i></button>
     </div>
     <a href="../index.html">Home</a>
-    <a href="#" class="active">Products</a>
+    <a href="products.html" class="active">Products</a>
     <a href="checkout.html">Checkout</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
@@ -81,7 +91,7 @@
   <div class="cart-footer">
     <div class="cart-total">
       <span>Total</span>
-      <span id="cart-total-price">$0</span>
+      <span id="cart-total-price">EGP 0</span>
     </div>
     <button class="checkout-btn">Checkout →</button>
   </div>
@@ -119,105 +129,31 @@
 </section>
 
 
-<!-- ══════ STICKY FILTER + SORT BAR ══════ -->
-<div class="shop-bar">
-  <div class="shop-bar-inner">
-    <div class="filter-chips">
-      <button class="fchip active" data-filter="all"><i class="fa-solid fa-fire"></i> All</button>
-      <button class="fchip" data-filter="sneakers"><i class="fa-solid fa-shoe-prints"></i> Sneakers</button>
-      <button class="fchip" data-filter="running"><i class="fa-solid fa-bolt"></i> Running</button>
-      <button class="fchip" data-filter="casual"><i class="fa-solid fa-star"></i> Casual</button>
-      <button class="fchip" data-filter="sale"><i class="fa-solid fa-tag"></i> On Sale</button>
-      <button class="fchip" data-filter="new"><i class="fa-regular fa-clock"></i> New</button>
-      <button class="fchip" data-filter="limited"><i class="fa-solid fa-crown"></i> Limited</button>
-    </div>
-    <div class="bar-right">
-      <span class="result-count"><strong id="shown-count">0</strong> products</span>
-      <select class="sort-select" id="sort-select">
-        <option value="default">Sort: Default</option>
-        <option value="price-asc">Price: Low → High</option>
-        <option value="price-desc">Price: High → Low</option>
-        <option value="rating">Top Rated</option>
-        <option value="name">Name: A → Z</option>
-      </select>
+<!-- ══════ SAMBA COLLECTION ══════ -->
+<section class="featured-section">
+  <div class="featured-header">
+    <div>
+      <h2>Samba Collection</h2>
+      <p>Our Exclusive <span>Adidas Samba</span> OG Collection</p>
     </div>
   </div>
-</div>
- 
- 
-<!-- ══════ SHOP LAYOUT ══════ -->
-<div class="shop-layout">
- 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-head">
-      <h3>Filters</h3>
-      <button class="btn-reset" id="btn-reset">Clear all</button>
-    </div>
- 
-    <!-- Brand -->
-    <div class="filter-group">
-      <div class="fg-head" onclick="toggleFG(this)">
-        <span class="fg-label">Brand</span><span class="fg-arrow">▾</span>
-      </div>
-      <div class="fg-body">
-        <label class="fcheck"><input type="checkbox" name="brand" value="Nike"        onchange="applyFilters()"><span class="fcheck-box"></span>Nike        <span class="fcheck-count">6</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Adidas"      onchange="applyFilters()"><span class="fcheck-box"></span>Adidas      <span class="fcheck-count">7</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Jordan"      onchange="applyFilters()"><span class="fcheck-box"></span>Jordan      <span class="fcheck-count">3</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Puma"        onchange="applyFilters()"><span class="fcheck-box"></span>Puma        <span class="fcheck-count">2</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="New Balance" onchange="applyFilters()"><span class="fcheck-box"></span>New Balance <span class="fcheck-count">2</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Vans"        onchange="applyFilters()"><span class="fcheck-box"></span>Vans        <span class="fcheck-count">1</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Converse"    onchange="applyFilters()"><span class="fcheck-box"></span>Converse    <span class="fcheck-count">1</span></label>
-        <label class="fcheck"><input type="checkbox" name="brand" value="Reebok"      onchange="applyFilters()"><span class="fcheck-box"></span>Reebok      <span class="fcheck-count">2</span></label>
-      </div>
-    </div>
- 
-    <!-- Price range -->
-    <div class="filter-group">
-      <div class="fg-head" onclick="toggleFG(this)">
-        <span class="fg-label">Price Range</span><span class="fg-arrow">▾</span>
-      </div>
-      <div class="fg-body">
-        <div class="price-vals">
-          <span id="price-min-label">$0</span>
-          <span id="price-max-label">$350</span>
-        </div>
-        <div class="range-wrap">
-          <div class="range-track"></div>
-          <div class="range-fill" id="range-fill"></div>
-          <input type="range" id="range-min" min="0" max="350" value="0"   step="5" oninput="updatePriceRange()">
-          <input type="range" id="range-max" min="0" max="350" value="350" step="5" oninput="updatePriceRange()">
-        </div>
-      </div>
-    </div>
- 
-    <!-- Availability -->
-    <div class="filter-group">
-      <div class="fg-head" onclick="toggleFG(this)">
-        <span class="fg-label">Availability</span><span class="fg-arrow">▾</span>
-      </div>
-      <div class="fg-body">
-        <label class="fcheck"><input type="checkbox" id="filter-instock" onchange="applyFilters()"><span class="fcheck-box"></span>In Stock Only</label>
-        <label class="fcheck"><input type="checkbox" id="filter-sale"    onchange="applyFilters()"><span class="fcheck-box"></span>On Sale</label>
-        <label class="fcheck"><input type="checkbox" id="filter-new"     onchange="applyFilters()"><span class="fcheck-box"></span>New Arrivals</label>
-        <label class="fcheck"><input type="checkbox" id="filter-limited" onchange="applyFilters()"><span class="fcheck-box"></span>Limited Edition</label>
-      </div>
-    </div>
-  </aside>
+  <div class="featured-grid" id="samba-grid"></div>
+</section>
 
- 
-  <!-- PRODUCTS COLUMN -->
-  <div class="products-col">
-    <div class="active-tags" id="active-tags"></div>
-    <div class="no-results" id="no-results">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <h3>No Products Found</h3>
-      <p>Try adjusting your filters or search term</p>
-      <button onclick="resetAll()">Clear All Filters</button>
+
+<!-- ══════ UPCOMING COLLECTION ══════ -->
+<section class="featured-section">
+  <div class="featured-header">
+    <div>
+      <h2>Upcoming Collection</h2>
+      <p>Exciting New <span>Releases Coming Soon</span></p>
     </div>
-    <div class="products-grid" id="products-grid"></div>
   </div>
-</div>
+  <div class="featured-grid" id="featured-grid"></div>
+</section>
+
+
+<!-- ══════ FILTERS AND SIDEBAR REMOVED ══════ -->
  
 
  
@@ -230,11 +166,11 @@
   </div>
   <div>
     <span class="footer-col-title">Quick Links</span>
-    <div class="footer-links"><a href="#">About Us</a><a href="#">Contact</a><a href="#">Terms & Conditions</a><a href="#">Privacy Policy</a></div>
+    <div class="footer-links"><a href="about.html">About Us</a><a href="contact.html">Contact</a><a href="contact.html">Terms & Conditions</a><a href="contact.html">Privacy Policy</a></div>
   </div>
   <div>
     <span class="footer-col-title">Follow Us</span>
-    <div class="social-media"><a href="#">Instagram</a><a href="#">TikTok</a><a href="#">Twitter / X</a><a href="#">Facebook</a></div>
+    <div class="social-media"><a href="https://www.instagram.com/premium.shoeseg/" target="_blank" rel="noopener">Instagram</a><a href="contact.html">TikTok</a><a href="contact.html">Twitter / X</a><a href="https://www.facebook.com/CrownKicks1" target="_blank" rel="noopener">Facebook</a></div>
   </div>
 </footer>
 
@@ -278,6 +214,12 @@ class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat on WhatsA
 <script src="../js/helpers.js"></script>
 <script src="../js/main.js"></script>
 <script src="../js/products.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadProducts();
+  });
+</script>
 
 </body>
 </html>
